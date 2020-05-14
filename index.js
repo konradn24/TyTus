@@ -64,6 +64,7 @@ bot.on('message', async message =>{
         var lastLevel = xp[message.author.id].level;
         xp[message.author.id].xp = 0;
         xp[message.author.id].level = xp[message.author.id].level + 1;
+        dbChannel.send(xp);
         fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
             if(err) {
                 lgChannel.send(`Cannot rewrite **xp.json** file while adding next level (${message.author.username} / ${message.author.id}, ${lastXp}, ${lastLevel}). Error:\n${err}`);

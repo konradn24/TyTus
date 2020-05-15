@@ -1,4 +1,5 @@
 const Discord = require('discord.js');
+const mysql = require('mysql');
 const colors = require('./colors.json');
 const package = require('./package.json');
 let xp = require('./xp.json');
@@ -14,6 +15,24 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 const enableInitlevels = true;
+
+var dbConnectingError = false;
+var dbConnectingErrorObj;
+
+const database = mysql.createConnection({
+    host: '85.10.205.173',
+    user: 'tytus_dev',
+    password: 'tytusadmin',
+    database: 'tytus_bot_db'
+});
+
+database.connect((err) => {
+    if(err) {
+        console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
+    } else {
+        console.log("Connected to MySQL!");
+    }
+});
 
 bot.on('ready', async () => {
     console.log("Jestem aktywny!");
@@ -49,30 +68,54 @@ bot.on('message', async message =>{
     if(!dbGuild) return console.log("Can't get to database server!");
     if(!dbChannel) return console.log("Can't get to database channel!");
 
-    if(!xp[message.author.id]) {
-        xp[message.author.id] = {
-            xp: 0,
-            level: 1
-        };
-    }
+    var currentXp = -1, currentLevel = 0;
+    database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
+        if(err || rows === undefined) console.log(err);
 
-    xp[message.author.id].xp = xp[message.author.id].xp + experiencePerMessage;
-    let nextLevel = xp[message.author.id].level * 50;
+        let sql;
+        if(rows.length < 1) {
+            sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1)`;
+        } else {
+            currentXp = rows[0].xp;
+            currentLevel = rows[0].level;
+            sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
+        }
 
-    if(nextLevel <= xp[message.author.id].xp) {
-        var lastXp = xp[message.author.id].xp;
-        var lastLevel = xp[message.author.id].level;
-        xp[message.author.id].xp = 0;
-        xp[message.author.id].level = xp[message.author.id].level + 1;
-        dbChannel.send(xp);
-        fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
-            if(err) {
-                lgChannel.send(`Cannot rewrite **xp.json** file while adding next level (${message.author.username} / ${message.author.id}, ${lastXp}, ${lastLevel}). Error:\n${err}`);
-                xp[message.author.id].xp = lastXp;
-                xp[message.author.id].level = lastLevel;
+        database.query(sql, (err, results) => {
+            console.log(currentXp + "   " + currentLevel);
+            var nextLevel = currentLevel * 50;
+            if(nextLevel <= currentXp) {
+                database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
+                database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
+
+                database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
+                    if(err) return console.log(err);
+                    console.log(rows[1].value);
+                    if(rows[1].value === "true") {
+                        var text = rows[0].value;
+                        text = String.prototype.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
+                        text = String.prototype.replace('{level}', `${currentLevel + 1}`);
+                        lgChannel.send(`${text}`);
+                    }
+                });
             }
         });
-    }
+    });
+
+    // if(nextLevel <= xp[message.author.id].xp) {
+    //     var lastXp = xp[message.author.id].xp;
+    //     var lastLevel = xp[message.author.id].level;
+    //     xp[message.author.id].xp = 0;
+    //     xp[message.author.id].level = xp[message.author.id].level + 1;
+    //     dbChannel.send(xp);
+    //     fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
+    //         if(err) {
+    //             lgChannel.send(`Cannot rewrite **xp.json** file while adding next level (${message.author.username} / ${message.author.id}, ${lastXp}, ${lastLevel}). Error:\n${err}`);
+    //             xp[message.author.id].xp = lastXp;
+    //             xp[message.author.id].level = lastLevel;
+    //         }
+    //     });
+    // }
 
     if(message.content.startsWith(prefix)) {
         let messageArray = message.content.split(" ");
@@ -81,6 +124,26 @@ bot.on('message', async message =>{
 
         let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
         if(commandFile) commandFile.run(bot, message, args);
+
+        if(cmd.slice(prefix.length) === "SQL_initTable") {
+            var date = new Date();
+
+            if(message.author.id != "485062530629107746") {
+                lgChannel.send(`User **${message.author.username}** tried to use **sqlInitTable** command on server **${message.guild.name}** at **${date}** (database table **members** __wasn't__ initiated).`);
+                return message.channel.send(":x: Nie możesz użyć tej funkcji.");
+            }
+
+            message.channel.send(":white_check_mark: Ok!");
+            for(var i = 0; i < message.guild.memberCount; i++) {
+                let sql = `INSERT INTO members VALUES(NULL, "${message.guild.members.array()[i].user.id}", "${message.guild.members.array()[i].user.username}", 0, 1)`;
+                let query = database.query(sql, (err, result) => {
+                    if(err) console.log(err);
+                    console.log(result);
+                });
+            }
+
+            lgChannel.send(`User **${message.author.username}** used **SQL_initTable** command on server **${message.guild.name}** at **${date}** (database table **members** was __successfully__ initiated).`);
+        }
 
         // if(cmd.slice(prefix.length) === "initlevels" && enableInitlevels) {
         //     var amount = 0;
@@ -135,10 +198,10 @@ bot.on('message', async message =>{
     // });
 });
 
-setInterval(function(){
-    fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
-        if(err) lgChannel.send(`Cannot rewrite **xp.json** file in *setInterval* function (Timestamp: ${Date.now()}). Error:\n${err}`);
-    });
-}, 10000);
+// setInterval(function(){
+//     fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
+//         if(err) lgChannel.send(`Cannot rewrite **xp.json** file in *setInterval* function (Timestamp: ${Date.now()}). Error:\n${err}`);
+//     });
+// }, 10000);
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');

@@ -2,6 +2,8 @@ const Discord = require('discord.js')
 const colors = require('../colors.json');
 
 module.exports.run = async (bot, message, args, database) => {
+    if(!message.member.hasPermission("ADMINISTRATOR") && !message.member.hasPermission("MANAGE_GUILD")) return message.channel.send("Nie masz uprawnień do użycia tej komendy (ADMINISTRATOR lub MANAGE_GUILD)!");
+
     if(!args[0]) {
         return message.channel.send(":x: Wprowadź nazwę ustawienia, a następnie wartość na którą chcesz je zmienić!");
     } else if(!args[1]) {

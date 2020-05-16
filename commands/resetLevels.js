@@ -4,6 +4,8 @@ const colors = require('../colors.json');
 var started = false;
 
 module.exports.run = async (bot, message, args, database) => {
+    if(!message.member.hasPermission("ADMINISTRATOR")) return message.channel.send("Nie masz uprawnień do użycia tej komendy (ADMINISTRATOR)!");
+
     if((!args[0] && !started) || (args[0] === "YES" && !started)) {
         started = true;
         return message.channel.send(":grey_question: Wpisz **/resetLevels YES** jeżeli jesteś pewny, że chcesz to zrobić. Jeżeli nie chcesz, to wprowadź **/resetLevels NO** lub **/resetLevels**. UWAGA: ZRESETOWANIA PUNKTÓW I POZIOMÓW DLA WSZYSTKICH UŻYTKOWNIKÓW PRZEWAŻNIE NIE DA SIĘ COFNĄĆ!!!");

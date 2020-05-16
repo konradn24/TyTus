@@ -1,7 +1,7 @@
 const Discord = require('discord.js')
 const colors = require('../colors.json');
 
-module.exports.run = async (bot, message, args) => {
+module.exports.run = async (bot, message, args, database) => {
     if(!message.member.hasPermission("MANAGE_ROLES")) return message.channel.send("Nie masz uprawnień do użycia tej komendy (MANAGE_ROLES)!");
 
     let mute = message.mentions.members.first() || message.guild.members.get(args[0]);

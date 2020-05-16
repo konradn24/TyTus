@@ -1,7 +1,7 @@
 const Discord = require('discord.js')
 const colors = require('../colors.json');
 
-module.exports.run = async (bot, message, args) => {
+module.exports.run = async (bot, message, args, database) => {
     message.channel.send("Siemka!");
 }
 

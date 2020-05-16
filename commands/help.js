@@ -1,8 +1,39 @@
 const Discord = require('discord.js')
 const colors = require('../colors.json');
 
-module.exports.run = async (bot, message, args) => {
+module.exports.run = async (bot, message, args, database) => {
     if(args[0]) {
+        if(args[0] === "configs") {
+            database.query(`SELECT * FROM config`, (err, rows) => {
+                if(err) return console.log(err);
+                var text = "**/showConfig <nazwaUstawienia>**, żeby wyświetlić aktualną wartość dla danego ustawienia. \n **/config <nazwaUstawienia> <wartosc>**, żeby zmienić wybrane ustawienie. \n \n";
+                for(var i = 0; i < rows.length; i++) {
+                    var values;
+                    switch(rows[i].allowedValues) {
+                        case "number": {
+                            values = "liczba";
+                            break;
+                        }
+                        case "boolean": {
+                            values = "true / false";
+                            break;
+                        }
+                        case "ALL": {
+                            values = "wszystko (tekst, liczby)";
+                            break;
+                        }
+                        default: {
+                            values = "nie określono";
+                            break;
+                        }
+                    }
+                    text += `\`${rows[i].name}\` - ${rows[i].description} Dopuszczalne wartości: *${values}*.\n\n`;
+                }
+
+                message.channel.send(text);
+            });
+        }
+
         let command = args[0];
         if(bot.commands.has(command)) {
             command = bot.commands.get(command);
@@ -16,11 +47,8 @@ module.exports.run = async (bot, message, args) => {
             message.channel.send(text);
         }
     } else {
-        var hembed = new Discord.MessageEmbed()
-        .setColor(colors.red_light)
-        .setAuthor('TyTus Bot Pomoc', message.guild.iconURL)
-        .setDescription(`Wprowadź **/help <nazwaKomendy>**, żeby więcej się o niej dowiedzieć\n\n \`help\` \n \`help <nazwaKomendy>\` \n \`test\` \n \`botinfo\``)
-        message.channel.send(hembed);
+        var text = `Wprowadź **/help <nazwaKomendy>**, żeby więcej się o niej dowiedzieć\n\n \`help\` \n \`help <nazwaKomendy>\` \n \`test\` \n \`botinfo\` \n \`ban\` \n \`mute\` \n \`unmute\` \n \`config\` \n \`showConfig\` \n \`resetLevels\` \n \`level\``;
+        message.channel.send(text);
     }
 }
 

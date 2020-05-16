@@ -68,21 +68,22 @@ bot.on('message', async message =>{
     if(!dbGuild) return console.log("Can't get to database server!");
     if(!dbChannel) return console.log("Can't get to database channel!");
 
-    var currentXp = -1, currentLevel = 0;
+    var currentXp = -1, currentLevel = 0, currentTotalXp;
     database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
         if(err || rows === undefined) console.log(err);
 
         let sql;
         if(rows.length < 1) {
-            sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1)`;
+            sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
         } else {
             currentXp = rows[0].xp;
             currentLevel = rows[0].level;
+            currentTotalXp = rows[0].totalXp;
             sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
+            database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
         }
 
         database.query(sql, (err, results) => {
-            console.log(currentXp + "   " + currentLevel);
             var nextLevel = currentLevel * 50;
             if(nextLevel <= currentXp) {
                 database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
@@ -90,12 +91,11 @@ bot.on('message', async message =>{
 
                 database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
                     if(err) return console.log(err);
-                    console.log(rows[1].value);
                     if(rows[1].value === "true") {
                         var text = rows[0].value;
-                        text = String.prototype.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
-                        text = String.prototype.replace('{level}', `${currentLevel + 1}`);
-                        lgChannel.send(`${text}`);
+                        text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
+                        text = text.replace('{level}', `${currentLevel + 1}`);
+                        message.channel.send(`${text}`);
                     }
                 });
             }
@@ -123,7 +123,7 @@ bot.on('message', async message =>{
         let args = messageArray.slice(1);
 
         let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
-        if(commandFile) commandFile.run(bot, message, args);
+        if(commandFile) commandFile.run(bot, message, args, database);
 
         if(cmd.slice(prefix.length) === "SQL_initTable") {
             var date = new Date();

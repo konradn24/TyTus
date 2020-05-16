@@ -11,6 +11,9 @@ module.exports.run = async (bot, message, args, database) => {
     let member = message.mentions.members.first();
     if(!member) return message.channel.send(":x: Określ któremu użytkownikowi chcesz zwiększyć poziom. Jeżeli potrzebujesz pomocy, wprowadź **/help addLevel**.");
 
+    var toAdd = parseInt(args[1]);
+    if(toAdd === "NaN") return message.channel.send(":x: Podana wartość nie jest liczbą!");
+
     database.query(`SELECT * FROM members WHERE discordID = "${member.user.id}"`, (err, rows) => {
         if(err) {
             console.log(err);
@@ -19,26 +22,26 @@ module.exports.run = async (bot, message, args, database) => {
 
         var totalXp;
         if(rows.length < 1) {
-            for(var i = 1; i < args[1] + 1; i++) {
+            for(var i = 1; i < toAdd + 1; i++) {
                 totalXp += i * 50;
             }
 
-            database.query(`INSERT INTO members VALUES(NULL, "${member.user.id}", "${member.user.username}", 0, ${args[1] + 1}, ${totalXp})`, (err, rows) => {
+            database.query(`INSERT INTO members VALUES(NULL, "${member.user.id}", "${member.user.username}", 0, ${toAdd + 1}, ${totalXp})`, (err, rows) => {
                 if(err) {
                     console.log(err);
                     return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych (2). Spróbuj ponownie później.");
                 }
 
-                return message.channel.send(`:white_check_mark: Dodano **${args[1]}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${args[1] + 1}.`);
+                return message.channel.send(`:white_check_mark: Dodano **${toAdd}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${toAdd + 1}.`);
             });
         }
 
-        for(var i = rows[0].level; i < args[1] + rows[0].level; i++) {
+        for(var i = rows[0].level; i < toAdd + rows[0].level; i++) {
             totalXp += i * 50;
         }
 
         totalXp -= rows[0].xp;
-        database.query(`UPDATE members SET level = ${rows[0].level + args[1]} WHERE discordID = "${member.user.id}"`, (err1, rows1) => {
+        database.query(`UPDATE members SET level = ${rows[0].level + toAdd} WHERE discordID = "${member.user.id}"`, (err1, rows1) => {
             if(err1) {
                 console.log(err1);
                 return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych (3). Spróbuj ponownie później.");
@@ -50,7 +53,7 @@ module.exports.run = async (bot, message, args, database) => {
                     return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych (4). Spróbuj ponownie później.");
                 }
 
-                message.channel.send(`:white_check_mark: Dodano **${args[1]}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${rows[0].level + args[1]}.`);
+                message.channel.send(`:white_check_mark: Dodano **${toAdd}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${rows[0].level + toAdd}.`);
                 });
             });
         });

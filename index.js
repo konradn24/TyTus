@@ -14,10 +14,8 @@ const version = 0.1;
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
-const enableInitlevels = true;
 
-var dbConnectingError = false;
-var dbConnectingErrorObj;
+var config;
 
 const database = mysql.createConnection({
     host: '85.10.205.173',
@@ -31,6 +29,12 @@ database.connect((err) => {
         console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
     } else {
         console.log("Connected to MySQL!");
+
+        database.query(`SELECT * FROM config`, (err, rows) => {
+            if(err) return console.log(err);
+
+            config = rows;
+        });
     }
 });
 
@@ -71,6 +75,7 @@ bot.on('message', async message =>{
     var currentXp = -1, currentLevel = 0, currentTotalXp;
     database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
         if(err || rows === undefined) console.log(err);
+        if(config[2].value === "false") return;
 
         let sql;
         if(rows.length < 1) {
@@ -91,15 +96,12 @@ bot.on('message', async message =>{
                 database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
                 database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
 
-                database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
-                    if(err) return console.log(err);
-                    if(rows[1].value === "true") {
-                        var text = rows[0].value;
-                        text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
-                        text = text.replace('{level}', `${currentLevel + 1}`);
-                        message.channel.send(`${text}`);
-                    }
-                });
+                if(config[1].value === "true") {
+                    var text = config[0].value;
+                    text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
+                    text = text.replace('{level}', `${currentLevel + 1}`);
+                    message.channel.send(`${text}`);
+                }
             }
         });
     });

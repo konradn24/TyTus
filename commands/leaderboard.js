@@ -2,18 +2,27 @@ const Discord = require('discord.js')
 const colors = require('../colors.json');
 
 module.exports.run = async (bot, message, args, database) => {
-    database.query(`SELECT * FROM members ORDER BY totalXp DESC`, (err, rows) => {
-        if(err) {
-            console.log(err);
-            return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych. Spróbuj ponownie później.");
+    database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
+        if(errC) {
+            console.log(errC);
+            return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych (config). Spróbuj ponownie później.");
         }
 
-        var text = `\`TOP 10 - AKTYWNOŚĆ\``;
-        for(var i = 0; i < 10; i++) {
-            text += `\n **#${i + 1}** *${rows[i].username}* | Total XP: **${rows[i].totalXp}** | Poziom: **${rows[i].level}**`;
-        }
+        if(rowsC[0].value === "false") return message.channel.send(":x: Nie możesz zobaczyć rankingu aktywności, ponieważ poziomy za aktywność są wyłączone.");
 
-        message.channel.send(text);
+        database.query(`SELECT * FROM members ORDER BY totalXp DESC`, (err, rows) => {
+            if(err) {
+                console.log(err);
+                return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych. Spróbuj ponownie później.");
+            }
+
+            var text = `\`TOP 10 - AKTYWNOŚĆ\``;
+            for(var i = 0; i < 10; i++) {
+                text += `\n **#${i + 1}** *${rows[i].username}* | Total XP: **${rows[i].totalXp}** | Poziom: **${rows[i].level}**`;
+            }
+
+            message.channel.send(text);
+        });
     });
 }
 

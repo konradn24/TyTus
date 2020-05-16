@@ -65,38 +65,44 @@ bot.on('message', async message =>{
     if(!dbChannel) return console.log("Can't get to database channel!");
 
     var currentXp = -1, currentLevel = 0, currentTotalXp;
-    database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
-        if(err || rows === undefined) console.log(err);
+    database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
+        if(errC) return console.log(errC);
 
-        let sql;
-        if(rows.length < 1) {
-            sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
-        } else {
-            currentXp = rows[0].xp;
-            currentLevel = rows[0].level;
-            currentTotalXp = rows[0].totalXp;
-            sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
-            database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
+        if(rowsC[0].value === "false") return;
 
-            if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
-        }
+        database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
+            if(err || rows === undefined) console.log(err);
 
-        database.query(sql, (err, results) => {
-            var nextLevel = currentLevel * 50;
-            if(nextLevel <= currentXp) {
-                database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
-                database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
+            let sql;
+            if(rows.length < 1) {
+                sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
+            } else {
+                currentXp = rows[0].xp;
+                currentLevel = rows[0].level;
+                currentTotalXp = rows[0].totalXp;
+                sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
+                database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
 
-                database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
-                    if(err) return console.log(err);
-                    if(rows[1].value === "true") {
-                        var text = rows[0].value;
-                        text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
-                        text = text.replace('{level}', `${currentLevel + 1}`);
-                        message.channel.send(`${text}`);
-                    }
-                });
+                if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
             }
+
+            database.query(sql, (err, results) => {
+                var nextLevel = currentLevel * 50;
+                if(nextLevel <= currentXp) {
+                    database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
+                    database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
+
+                    database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
+                        if(err) return console.log(err);
+                        if(rows[1].value === "true") {
+                            var text = rows[0].value;
+                            text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
+                            text = text.replace('{level}', `${currentLevel + 1}`);
+                            message.channel.send(`${text}`);
+                        }
+                    });
+                }
+            });
         });
     });
 

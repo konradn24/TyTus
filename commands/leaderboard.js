@@ -10,8 +10,7 @@ module.exports.run = async (bot, message, args, database) => {
 
         var text = `\`TOP 10 - AKTYWNOŚĆ\``;
         for(var i = 0; i < 10; i++) {
-            var nickname = message.guild.members.find("id", `${rows[i].discordID}`).displayName;
-            text += `\n **#${i + 1}** *${nickname}* | Total XP: **${rows[i].totalXp}** | Poziom: **${rows[i].level}**`;
+            text += `\n **#${i + 1}** *${rows[i].username}* | Total XP: **${rows[i].totalXp}** | Poziom: **${rows[i].level}**`;
         }
 
         message.channel.send(text);

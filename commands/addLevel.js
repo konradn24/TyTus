@@ -6,7 +6,6 @@ module.exports.run = async (bot, message, args, database) => {
 
     if(!args[0]) return message.channel.send(":x: Określ któremu użytkownikowi chcesz zwiększyć poziom. Jeżeli potrzebujesz pomocy, wprowadź **/help addLevel**.");
     else if(!args[1]) return message.channel.send(":x: Określ ile poziomów chcesz dodać temu użytkownikowi.");
-    else if(typeof args[1] != "number") return message.channel.send(":x: Proszę podać liczbę większą od 0!");
     else if(args[1] < 1) return message.channel.send(":x: Proszę podać liczbę większą od 0! Jeżeli chcesz zmniejszyć poziom użytkownika wprowadź **/reduceLevel <@osoba> <ilosc>**.");
     
     let member = message.mentions.members.first();

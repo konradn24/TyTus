@@ -81,6 +81,8 @@ bot.on('message', async message =>{
             currentTotalXp = rows[0].totalXp;
             sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
             database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
+
+            if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
         }
 
         database.query(sql, (err, results) => {

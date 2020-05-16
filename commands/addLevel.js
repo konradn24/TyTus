@@ -20,7 +20,7 @@ module.exports.run = async (bot, message, args, database) => {
             return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych (1). Spróbuj ponownie później.");
         }
 
-        var totalXp;
+        var totalXp = 0;
         if(rows.length < 1) {
             for(var i = 1; i < toAdd + 1; i++) {
                 totalXp += i * 50;

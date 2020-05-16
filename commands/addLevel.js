@@ -53,8 +53,7 @@ module.exports.run = async (bot, message, args, database) => {
                 message.channel.send(`:white_check_mark: Dodano **${args[1]}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${rows[0].level + args[1]}.`);
                 });
             });
-        }
-    });
+        });
 }
 
 module.exports.config = {

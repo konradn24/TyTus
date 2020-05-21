@@ -15,14 +15,14 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 
-const database = mysql.createConnection({
+const database = mysql.createPool({
     host: '85.10.205.173',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
 });
 
-database.connect((err) => {
+database.getConnection((err, connection) => {
     if(err) {
         console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
     } else {
@@ -209,3 +209,4 @@ bot.on('message', async message =>{
 // }, 10000);
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
+

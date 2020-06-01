@@ -1,6 +1,8 @@
 const Discord = require('discord.js')
 const colors = require('../colors.json');
 
+const loading = "Resetowanie poziomów...";
+
 var started = false;
 
 module.exports.run = async (bot, message, args, database) => {
@@ -18,25 +20,28 @@ module.exports.run = async (bot, message, args, database) => {
 
     if(args[0] === "YES" && started) {
         started = false;
+
+        response(message, loading);
+
         database.query(`UPDATE members SET xp = 0`, (err, rows) => {
             if(err) {
                 console.log(err);
-                return message.channel.send(":x: Podczas resetu wystąpił nieoczekiwany błąd (1)! Spróbuj ponownie później.");
+                return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (1)! Spróbuj ponownie później.");
             }
 
             database.query(`UPDATE members SET level = 1`, (err, rows) => {
                 if(err) {
                     console.log(err);
-                    return message.channel.send(":x: Podczas resetu wystąpił nieoczekiwany błąd (2)! Spróbuj ponownie później.");
+                    return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (2)! Spróbuj ponownie później.");
                 }
 
                 database.query(`UPDATE members SET totalXp = 0`, (err, rows) => {
                     if(err) {
                         console.log(err);
-                        return message.channel.send(":x: Podczas resetu wystąpił nieoczekiwany błąd (3)! Spróbuj ponownie później.");
+                        return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (3)! Spróbuj ponownie później.");
                     }
     
-                    message.channel.send(":white_check_mark: Pomyślnie zresetowano punkty i poziomy dla wszystkich osób w bazie danych!");
+                    response(message, ":white_check_mark: Pomyślnie zresetowano punkty i poziomy dla wszystkich osób w bazie danych!");
                 });
             });
         });
@@ -48,4 +53,8 @@ module.exports.config = {
     aliases: ["rLevels", "resetPointsForActivity"],
     description: "Resetuje punkty i poziomy za aktywność dla wszystkich użytkowników zapisanych w bazie danych. __UWAGA: NIE MOŻNA TEGO COFNĄĆ!!!__.",
     bigDesc: "Resetuje punkty i poziomy za aktywność dla wszystkich użytkowników zapisanych w bazie danych. __UWAGA: NIE MOŻNA TEGO COFNĄĆ!!!__."
+}
+
+function response(message, response) {
+    message.channel.send(response);
 }

@@ -118,12 +118,8 @@ bot.on('message', async message =>{
         let cmd = messageArray[0];
         let args = messageArray.slice(1);
 
-        try {
-            let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
-            if(commandFile) commandFile.run(bot, message, args, database);
-        } catch(e) {
-            
-        }
+        let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
+        if(commandFile) commandFile.run(bot, message, args, database);
 
         if(cmd.slice(prefix.length) === "SQL_initTable") {
             var date = new Date();
@@ -158,12 +154,12 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
         var msgContent2 = msgContent1[1].split(" |");
         var msgContentFinal = msgContent2[0];
-        msgContentFinal = msgContentFinal.substr(0, msgContentFinal.length - 1);
 
-        console.log(msgContentFinal);
+        var index = reaction.message.content.substr(10, 2);
+        console.log(index);
 
         try {
-        database.query(`SELECT * FROM tasks WHERE text="${msgContentFinal}"`, (err, rows) => {
+        database.query(`SELECT * FROM tasks WHERE id="${index}"`, (err, rows) => {
             if(err) {
                 return console.log("Database 1 error: " + err);
             }
@@ -238,4 +234,3 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 });
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
-

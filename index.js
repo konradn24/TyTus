@@ -158,7 +158,7 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
         var msgContent2 = msgContent1[1].split(" |");
         var msgContentFinal = msgContent2[0];
-        msgContentFinal = msgContentFinal.substr(msgContentFinal.length - 2, 1);
+        msgContentFinal = msgContentFinal.substr(0, msgContentFinal.length - 1);
 
         console.log(msgContentFinal);
 

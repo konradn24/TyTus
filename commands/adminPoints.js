@@ -30,7 +30,7 @@ module.exports.run = async (bot, message, args, database) => {
         }
 
         if(!args[0]) response(message, `:white_check_mark: Twoja ilość punktów wynosi: ${rows[0].points}`);
-        else response(message, `Ilość punktów tego użytkownika wynosi: ${rows[0].points}`)
+        else response(message, `:white_check_mark: Ilość punktów tego użytkownika wynosi: ${rows[0].points}`)
     });
 }
 

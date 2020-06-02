@@ -11,10 +11,12 @@ const experiencePerMessage = 5;
 const prefix = "/";
 const version = 0.1;
 
+const tasksChannelID = "670227462655049728";
+const guildID = "553913839108882432";
+
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
-
 const database = mysql.createPool({
     host: '85.10.205.173',
     user: 'tytus_dev',
@@ -25,7 +27,9 @@ const database = mysql.createPool({
 database.getConnection((err, connection) => {
     if(err) {
         console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
+        throw 'Closing program: cannot connect to database!';
     } else {
+        database.config.timeout = 30000;
         console.log("Connected to MySQL!");
     }
 });
@@ -33,6 +37,9 @@ database.getConnection((err, connection) => {
 bot.on('ready', async () => {
     console.log("Jestem aktywny!");
     bot.user.setActivity(`v${package.version} | /help`, {type: "WATCHING"});
+
+    //Fetching tasks messages
+    bot.guilds.find('id', guildID).channels.find('id', tasksChannelID).fetchMessages();
 });
 
 const fs = require('fs');
@@ -71,7 +78,7 @@ bot.on('message', async message =>{
         if(rowsC[0].value === "false") return;
 
         database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
-            if(err || rows === undefined) console.log(err);
+            if(err || rows === undefined) return console.log(err);
 
             let sql;
             if(rows.length < 1) {
@@ -96,7 +103,7 @@ bot.on('message', async message =>{
                         if(err) return console.log(err);
                         if(rows[1].value === "true") {
                             var text = rows[0].value;
-                            text = text.replace('{user}', `${dbGuild.members.find("id", "485062530629107746")}`);
+                            text = text.replace('{user}', `${message.guild.members.find("id", message.author.id)}`);
                             text = text.replace('{level}', `${currentLevel + 1}`);
                             message.channel.send(`${text}`);
                         }
@@ -106,28 +113,17 @@ bot.on('message', async message =>{
         });
     });
 
-    // if(nextLevel <= xp[message.author.id].xp) {
-    //     var lastXp = xp[message.author.id].xp;
-    //     var lastLevel = xp[message.author.id].level;
-    //     xp[message.author.id].xp = 0;
-    //     xp[message.author.id].level = xp[message.author.id].level + 1;
-    //     dbChannel.send(xp);
-    //     fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
-    //         if(err) {
-    //             lgChannel.send(`Cannot rewrite **xp.json** file while adding next level (${message.author.username} / ${message.author.id}, ${lastXp}, ${lastLevel}). Error:\n${err}`);
-    //             xp[message.author.id].xp = lastXp;
-    //             xp[message.author.id].level = lastLevel;
-    //         }
-    //     });
-    // }
-
     if(message.content.startsWith(prefix)) {
         let messageArray = message.content.split(" ");
         let cmd = messageArray[0];
         let args = messageArray.slice(1);
 
-        let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
-        if(commandFile) commandFile.run(bot, message, args, database);
+        try {
+            let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
+            if(commandFile) commandFile.run(bot, message, args, database);
+        } catch(e) {
+            
+        }
 
         if(cmd.slice(prefix.length) === "SQL_initTable") {
             var date = new Date();
@@ -148,65 +144,97 @@ bot.on('message', async message =>{
 
             lgChannel.send(`User **${message.author.username}** used **SQL_initTable** command on server **${message.guild.name}** at **${date}** (database table **members** was __successfully__ initiated).`);
         }
-
-        // if(cmd.slice(prefix.length) === "initlevels" && enableInitlevels) {
-        //     var amount = 0;
-
-        //     // message.guild.members.forEach(m => {
-        //     //     var isOnList = false;
-
-        //     //     dbChannel.fetchMessages().then(messages => {
-        //     //         messages.array().forEach(mg => {
-        //     //             if(mg.content.startsWith(m.user.username)) isOnList = true;
-        //     //         });
-        //     //     });
-
-        //     //     if(isOnList === false) {
-        //     //         dbChannel.send(`${m.user.username} 0`);
-        //     //     }
-
-        //     //     amount++;
-        //     // });
-
-        //     message.guild.members.forEach(m => {
-        //         if(m.user.username != "konradn24") {
-        //             dbChannel.send(`${m.user.username} 0`);
-        //             amount++;
-        //         }
-        //     });
-
-        //     message.channel.send(`Utworzono licznik punktów za wiadomości dla następującej liczby użytkowników: **${amount}**.`);
-        //     lgChannel.send(`Utworzono licznik punktów za wiadomości dla następującej liczby użytkowników: **${amount}**. Serwer: **${message.guild.name}**.`);
-        // } else if(cmd.slice(prefix.length) === "initlevels" && !enableInitlevels) {
-        //     message.channel.send(`Liczniki puktów zostały już stworzone dla każdego użytkownika!`);
-        //     lgChannel.send(`Użytkownik **${message.author.username}** próbował zainicjować liczniki puktów! Serwer: **${message.guild.name}**`);
-        // }
     }
-
-    // if(interval === 2) interval = 0;
-    // if(interval === 1) interval++;
-
-    // if(message.guild.name === databaseServer) return;
-
-    // var lastExp = 0;
-
-    // dbChannel.fetchMessages().then(messages => {
-    //     messages.array().forEach(m => {
-    //         if(m.content.startsWith(message.author.username)) {
-    //             lastExp = m.content.split(" ").slice(1);
-    //             lastExp++;
-    //             m.delete();
-    //             m.channel.send(`${message.author.username} ${lastExp}`);
-    //         }
-    //     });
-    // });
 });
 
-// setInterval(function(){
-//     fs.writeFile("./xp.json", JSON.stringify(xp), (err) => {
-//         if(err) lgChannel.send(`Cannot rewrite **xp.json** file in *setInterval* function (Timestamp: ${Date.now()}). Error:\n${err}`);
-//     });
-// }, 10000);
+bot.on("messageReactionAdd", async (reaction, member) => {
+    if(reaction.message.channel.id === tasksChannelID && reaction.emoji.name === "👍") {
+        let msgContent1 = reaction.message.content.split(': ');
+        if(msgContent1.length > 2) {
+            for(var i = 2; i < msgContent1.length; i++) {
+                msgContent1[1] += ":" + msgContent1[i]; 
+            }
+        }
+
+        var msgContent2 = msgContent1[1].split(" |");
+        var msgContentFinal = msgContent2[0];
+
+        console.log(msgContentFinal);
+
+        try {
+        database.query(`SELECT * FROM tasks WHERE text="${msgContentFinal}"`, (err, rows) => {
+            if(err) {
+                return console.log("Database 1 error: " + err);
+            }
+
+            var role = rows[0].role;
+
+            //When server owner clicks reaction "👍"
+            if(member.id === "334361003498405889") { //TiTi98_pl's ID IMPORTANT
+                if(rows[0].made === "tak" || rows[0].made_by === "") return; //If it's currently accepted or nobody made it, then return
+
+                //Updating task content
+                var taskFor;
+                if(role === "false") { //When task was for one person
+                    taskFor = reaction.message.mentions.members.first();
+                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text}\n**Wykonano!** :white_check_mark:`);
+                } else { //When task was for role
+                    taskFor = reaction.message.mentions.roles.first();
+                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text}\n**Wykonano przez ${reaction.message.guild.members.find('id', rows[0].made_by).user.username}!** :white_check_mark:`);
+                }
+
+                //Updating task's "made" param in database
+                database.query(`UPDATE tasks SET made="tak" WHERE id=${rows[0].id}`, console.log);
+
+                //Adding points
+                var madeBy = reaction.message.guild.members.find('id', rows[0].made_by);
+                madeBy.send(`Przyznano Ci ${rows[0].points} punktów za wykonanie zadania!`);
+
+                database.query(`SELECT * FROM administration WHERE discordID="${madeBy.id}"`, (err1, rows1) => {
+                    if(err1) {
+                        return console.log("Database 2 error: " + err1);
+                    }
+
+                    //If any user with this ID does not exist, add him to database
+                    if(rows1.length < 1) return database.query(`INSERT INTO administration VALUES(NULL, "${madeBy.id}", ${rows[0].points})`);
+
+                    //if there is user with this ID, update "points" param
+                    database.query(`UPDATE administration SET points=${rows1[0].points + rows[0].points} WHERE discordID="${madeBy.id}"`, console.log);
+                });
+            //When any other user clicks reaction
+            } else {
+                if(rows[0].made_by != "") return; //If someone has already made this task, then return
+
+                //Check if the task is for one person or role
+                var taskFor;
+                if(role === "false") taskFor = reaction.message.mentions.members.first();
+                else taskFor = reaction.message.mentions.roles.first();
+
+                if(role === "false") { //When task is for one person
+                    if(member.id != taskFor.id) return; //If person that clicked reaction don't have to make this task, then return
+
+                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text} |\n**Wykonano:** tak (niepotwierdzone :thinking:) |`);
+
+                    //Set task's param "made_by" to the ID of user that clicked reaction
+                    database.query(`UPDATE tasks SET made_by="${taskFor.id}" WHERE id=${rows[0].id}`, console.log);
+                } else {
+                    if(!reaction.message.guild.members.find('id', `${member.id}`).roles.find('id', taskFor.id)) return; //If this person doesn't have specified role, then return
+                    
+                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text} |\n**Wykonano przez:** ${member.username} (niepotwierdzone :thinking:) |`);
+                
+                    //Set task's param "made_by" to the ID of user that clicked reaction
+                    database.query(`UPDATE tasks SET made_by="${member.id}" WHERE id=${rows[0].id}`, console.log);
+                }
+            }
+        });
+        } catch(e) {
+            console.log(e);
+            reaction.message.channel.send("Wystąpił błąd!").then(msg => {
+                msg.delete(10000);
+            });
+        }
+    }
+});
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
 

@@ -25,7 +25,11 @@ module.exports.run = async (bot, message, args, database) => {
         max: 3,
         time: 120000
     }).then(collected => {
-        if(collected.first().content === "cancel") {
+        var col1; if(collected[0] != undefined) col1 = collected[0].content;
+        var col2; if(collected[1] != undefined) col2 = collected[1].content;
+        var col3; if(collected[2] != undefined) col3 = collected[2].content;
+
+        if(col1 === "cancel" || col2 === "cancel" || col3 === "cancel") {
             return message.channel.send(":x: Anulowano!");
         }
 

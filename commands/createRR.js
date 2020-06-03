@@ -26,7 +26,7 @@ module.exports.run = async (bot, message, args, database) => {
         time: 120000
     }).then(collected => {
         for(var i = 0; i < numRoles; i++) {
-            if(collected[i] === "cancel") {
+            if(collected[i].content === "cancel") {
                 return message.channel.send(":x: Anulowano!");
             }
         }

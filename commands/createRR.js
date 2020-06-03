@@ -22,7 +22,7 @@ module.exports.run = async (bot, message, args, database) => {
     const filter = m => m.author.id === message.author.id;
     message.channel.send(":white_check_mark: Ok! Wpisz teraz po kolei wszystkie role i emoji odpowiadające im (układ: <@rola> <emoji>).\nJeżeli się pomylisz lub będziesz chciał anulować dodawanie RR, wprowadź **cancel**.\nMasz 2 minuty czasu, potem dodawanie RR wygaśnie!")
     message.channel.awaitMessages(filter, {
-        max: numRoles,
+        max: 3,
         time: 120000
     }).then(collected => {
         for(var i = 0; i < numRoles; i++) {

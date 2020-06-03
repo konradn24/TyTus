@@ -18,21 +18,21 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 const database = mysql.createPool({
-    host: 'no85.10.205.173',
+    host: '85.10.205.173',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
 });
 
-// database.getConnection((err, connection) => {
-//     if(err) {
-//         console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
-//         throw 'Closing program: cannot connect to database!';
-//     } else {
-//         database.config.timeout = 30000;
-//         console.log("Connected to MySQL!");
-//     }
-// });
+database.getConnection((err, connection) => {
+    if(err) {
+        console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
+        throw 'Closing program: cannot connect to database!';
+    } else {
+        database.config.timeout = 30000;
+        console.log("Connected to MySQL!");
+    }
+});
 
 bot.on('ready', async () => {
     console.log("Jestem aktywny!");
@@ -72,46 +72,46 @@ bot.on('message', async message =>{
     if(!dbChannel) return console.log("Can't get to database channel!");
 
     var currentXp = -1, currentLevel = 0, currentTotalXp;
-    // database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
-    //     if(errC) return console.log(errC);
+    database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
+        if(errC) return console.log(errC);
 
-    //     if(rowsC[0].value === "false") return;
+        if(rowsC[0].value === "false") return;
 
-    //     database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
-    //         if(err || rows === undefined) return console.log(err);
+        database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
+            if(err || rows === undefined) return console.log(err);
 
-    //         let sql;
-    //         if(rows.length < 1) {
-    //             sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
-    //         } else {
-    //             currentXp = rows[0].xp;
-    //             currentLevel = rows[0].level;
-    //             currentTotalXp = rows[0].totalXp;
-    //             sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
-    //             database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
+            let sql;
+            if(rows.length < 1) {
+                sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
+            } else {
+                currentXp = rows[0].xp;
+                currentLevel = rows[0].level;
+                currentTotalXp = rows[0].totalXp;
+                sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
+                database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
 
-    //             if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
-    //         }
+                if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
+            }
 
-    //         database.query(sql, (err, results) => {
-    //             var nextLevel = currentLevel * 50;
-    //             if(nextLevel <= currentXp) {
-    //                 database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
-    //                 database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
+            database.query(sql, (err, results) => {
+                var nextLevel = currentLevel * 50;
+                if(nextLevel <= currentXp) {
+                    database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
+                    database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
 
-    //                 database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
-    //                     if(err) return console.log(err);
-    //                     if(rows[1].value === "true") {
-    //                         var text = rows[0].value;
-    //                         text = text.replace('{user}', `${message.guild.members.find("id", message.author.id)}`);
-    //                         text = text.replace('{level}', `${currentLevel + 1}`);
-    //                         message.channel.send(`${text}`);
-    //                     }
-    //                 });
-    //             }
-    //         });
-    //     });
-    // });
+                    database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
+                        if(err) return console.log(err);
+                        if(rows[1].value === "true") {
+                            var text = rows[0].value;
+                            text = text.replace('{user}', `${message.guild.members.find("id", message.author.id)}`);
+                            text = text.replace('{level}', `${currentLevel + 1}`);
+                            message.channel.send(`${text}`);
+                        }
+                    });
+                }
+            });
+        });
+    });
 
     if(message.content.startsWith(prefix)) {
         let messageArray = message.content.split(" ");

@@ -20,15 +20,17 @@ module.exports.run = async (bot, message, args, database) => {
     var emojis = new Array(numRoles);
 
     const filter = m => m.author.id === message.author.id;
-    message.channel.send(":white_check_mark: Ok! Wpisz teraz po kolei wszystkie role i emoji odpowiadające im (układ: <@rola> <emoji>).\nJeżeli się pomylisz lub będziesz chciał anulować dodawanie RR, wprowadź **cancel**.\nMasz 2 minuty czasu, potem dodawanie RR wygaśnie!")
+    message.channel.send(":white_check_mark: Ok! Wpisz teraz po kolei wszystkie role i odpowiadające im emoji (układ: <@rola> <emoji>).\nJeżeli się pomylisz lub będziesz chciał anulować dodawanie RR, wprowadź **cancel**.\nMasz 2 minuty czasu, potem dodawanie RR wygaśnie!")
     message.channel.awaitMessages(filter, {
         max: 3,
         time: 120000
     }).then(collected => {
+        if(collected.first().content === "cancel") {
+            return message.channel.send(":x: Anulowano!");
+        }
+
         for(var i = 0; i < numRoles; i++) {
-            if(collected[i].content === "cancel") {
-                return message.channel.send(":x: Anulowano!");
-            }
+            
         }
     });
 }

@@ -17,12 +17,12 @@ const guildID = "553913839108882432";
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
-// const database = mysql.createPool({
-//     host: '85.10.205.173',
-//     user: 'tytus_dev',
-//     password: 'tytusadmin',
-//     database: 'tytus_bot_db'
-// });
+const database = mysql.createPool({
+    host: 'no85.10.205.173',
+    user: 'tytus_dev',
+    password: 'tytusadmin',
+    database: 'tytus_bot_db'
+});
 
 // database.getConnection((err, connection) => {
 //     if(err) {

@@ -17,19 +17,19 @@ const guildID = "553913839108882432";
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
-const database = mysql.createPool({
-    host: '85.10.205.173',
+const database = mysql.createConnection({
+    host: 'db4free.net',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
 });
 
-database.getConnection((err, connection) => {
+database.connect((err, connection) => {
     if(err) {
         console.log(`There was an error while connecting to database, try changing host on 85.10.205.173 or db4free.net. ${err}`);
         throw 'Closing program: cannot connect to database!';
     } else {
-        database.config.timeout = 30000;
+        database.config.connectTimeout = 30000;
         console.log("Connected to MySQL!");
     }
 });
@@ -40,6 +40,19 @@ bot.on('ready', async () => {
 
     //Fetching tasks messages
     bot.guilds.find('id', guildID).channels.find('id', tasksChannelID).fetchMessages();
+
+    //Fetching reaction roles messages
+    database.query(`SELECT * FROM reaction_roles`, (err, rows) => {
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return;
+
+        for(var i = 0; i < rows.length; i++) {
+            var channelID = rows[i].channelID;
+
+            bot.channels.find('id', channelID).fetchMessages();
+        }
+    });
 });
 
 const fs = require('fs');
@@ -72,6 +85,7 @@ bot.on('message', async message =>{
     if(!dbChannel) return console.log("Can't get to database channel!");
 
     var currentXp = -1, currentLevel = 0, currentTotalXp;
+
     database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
         if(errC) return console.log(errC);
 
@@ -234,7 +248,57 @@ bot.on("messageReactionAdd", async (reaction, member) => {
         }
     }
 
-    //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ REACTION ROLES SYSTEM  ⋙⋙
+    //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ REACTION ROLES SYSTEM ⋙⋙
+
+    database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
+        if(err) return console.log(err);
+
+        if(rows.length < 1 || member.id === bot.user.id) return;
+
+        var roles = rows[0].roles;
+        var emojis = rows[0].emojis;
+
+        let rolesArray = roles.split("-");
+        let emojisArray = emojis.split("-");
+
+        if(rolesArray.length < 1 || emojisArray.length < 1) return console.log(`Reaction role error: no specified roles or emojis in row ${rows[0].id}!`);
+
+        var reactionIndex = -1;
+        reactionIndex = emojisArray.indexOf(reaction.emoji.name);
+
+        if(reactionIndex === -1) return;
+
+        var roleToAdd = reaction.message.guild.roles.find('id', rolesArray[reactionIndex]);
+
+        reaction.message.guild.members.find('id', member.id).addRole(roleToAdd);
+    });
+});
+
+bot.on('messageReactionRemove', async (reaction, member) => {
+    //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ REACTION ROLES SYSTEM ⋙⋙
+
+    database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return;
+
+        var roles = rows[0].roles;
+        var emojis = rows[0].emojis;
+
+        let rolesArray = roles.split("-");
+        let emojisArray = emojis.split("-");
+
+        if(rolesArray.length < 1 || emojisArray.length < 1) return console.log(`Reaction role error: no specified roles or emojis in row ${rows[0].id}!`);
+
+        var reactionIndex = -1;
+        reactionIndex = emojisArray.indexOf(reaction.emoji.name);
+
+        if(reactionIndex === -1) return;
+
+        var roleToRemove = reaction.message.guild.roles.find('id', rolesArray[reactionIndex]);
+
+        reaction.message.guild.members.find('id', member.id).removeRole(roleToRemove);
+    });
 });
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');

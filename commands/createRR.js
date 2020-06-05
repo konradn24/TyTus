@@ -80,21 +80,22 @@ module.exports.run = async (bot, message, args, database) => {
                                 emojis = new Array(numEmojis);
 
                                 //CREATING NEW ARRAYS AND ADDING ELEMENTS FROM MESSAGE TO 'ROLES' AND 'EMOJIS' ARRAYS
-                                var rolesID = new Array(numRoles);
                                 var rolesTextToDB = "";
                                 var emojisTextToDB = "";
+                                let formattedMsg = collectedMsgFromMember.content.split(' ');
+
+                                if(formattedMsg.length != numRoles) return message.channel.send(`:x: Wystąpił błąd przy formatowaniu wiadomości! Upewnij się, czy spacje są tylko pomiędzy rolami i nigdzie indziej.`);
 
                                 for(var i = 0; i < numRoles; i++) {
-                                    roles[i] = collectedMsgFromMember.mentions.roles.array()[i];
+                                    formattedMsg[i] = formattedMsg[i].replace('<@&', '').replace('>', '');
+                                    roles[i] = formattedMsg[i];
                                     emojis[i] = collectedMsgFromMember.reactions.array()[i].emoji.name;
 
-                                    rolesID[i] = roles[i].id;
-
                                     if(i === 0) {
-                                        rolesTextToDB += `${rolesID[i]}`;
+                                        rolesTextToDB += `${roles[i]}`;
                                         emojisTextToDB += `${emojis[i]}`;
                                     } else {
-                                        rolesTextToDB += `-${rolesID[i]}`;
+                                        rolesTextToDB += `-${roles[i]}`;
                                         emojisTextToDB += `-${emojis[i]}`;
                                     }
                                 }

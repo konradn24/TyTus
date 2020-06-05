@@ -271,6 +271,8 @@ bot.on("messageReactionAdd", async (reaction, member) => {
         var roleToAdd = reaction.message.guild.roles.find('id', rolesArray[reactionIndex]);
 
         reaction.message.guild.members.find('id', member.id).addRole(roleToAdd);
+
+        console.log(rolesArray[reactionIndex]);
     });
 });
 

@@ -253,13 +253,20 @@ bot.on("messageReactionAdd", async (reaction, member) => {
     database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
         if(err) return console.log(err);
 
+        //If the message isn't reaction roles msg or reacting user was bot, then return
         if(rows.length < 1 || member.id === bot.user.id) return;
 
+        //Definitions of neccessary variables
         var roles = rows[0].roles;
         var emojis = rows[0].emojis;
+        var configs = rows[0].configs;
 
         let rolesArray = roles.split("-");
         let emojisArray = emojis.split("-");
+        let configsArray = configs.split("-");
+
+        //configs
+        var verifySystemRoleToRemoveID = "";
 
         if(rolesArray.length < 1 || emojisArray.length < 1) return console.log(`Reaction role error: no specified roles or emojis in row ${rows[0].id}!`);
 
@@ -268,11 +275,19 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
         if(reactionIndex === -1) return;
 
+        if(configsArray.length > 0) {
+            for(var i = 0; i < configsArray.length; i++) {
+                if(configsArray[i].split(":")[0] === "verifySystem") {
+                    verifySystemRoleToRemoveID = configsArray[i].split(":")[1];
+                }
+            }
+        }
+
         var roleToAdd = reaction.message.guild.roles.find('id', rolesArray[reactionIndex]);
+        var verifySystemRoleToRemove = reaction.message.guild.roles.find('id', verifySystemRoleToRemoveID);
 
         reaction.message.guild.members.find('id', member.id).addRole(roleToAdd);
-
-        console.log(rolesArray[reactionIndex]);
+        if(verifySystemRoleToRemoveID != "") reaction.message.guild.members.find('id', member.id).removeRole(verifySystemRoleToRemove);
     });
 });
 

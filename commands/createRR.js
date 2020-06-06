@@ -15,18 +15,51 @@ module.exports.run = async (bot, message, args, database) => {
 
     var roles;
     var emojis;
+    var configs = "";
 
     const filter = m => m.author.id === message.author.id;
-    message.channel.send(":white_check_mark: Ok! Wpisz teraz po kolei wszystkie role, które będzie można sobie dodać, a następnie dodaj do wiadomości z rolami po kolei reakcje, które będą kolejno odpowiadać rangom (układ: <@rola> <@rola> <@rola> ...).\nJeżeli się pomylisz lub będziesz chciał anulować dodawanie RR, wprowadź **cancel**.\nGdy wypiszesz wszystkie role i dodasz reakcje, wprowadź **ok**.\nMasz 2 minuty czasu, potem dodawanie RR wygaśnie!");
-    const collector = message.channel.createMessageCollector(filter, { max: 3, time: 120000 });
+    message.channel.send(":white_check_mark: Ok! Wpisz teraz po kolei wszystkie role, które będzie można sobie dodać, a następnie dodaj do wiadomości z rolami po kolei reakcje, które będą kolejno odpowiadać rangom (układ: <@rola> <@rola> <@rola> ...).\nWprowadź: **cancel**, żeby anulować; **settings**, żeby pokazać dodatkowe ustawienia (dopiero po napisaniu rang i dodaniu reakcji); **ok**, żeby zatwierdzić.\nGdy wypiszesz wszystkie role i dodasz reakcje, wprowadź **ok**.\nMasz 2 minuty czasu, potem dodawanie RR wygaśnie!");
+    const collector = message.channel.createMessageCollector(filter, { time: 120000 });
 
     var success = true;
+    var settings = false;
     var sent = 0;
 
     collector.on('collect', m => {
         if(m.content === "cancel") {
             success = false;
             return collector.stop();
+        } else if(m.content === "settings") {
+            settings = true;
+            var embed = new Discord.RichEmbed()
+            .setColor(colors.white)
+            .setDescription("**verifySystem <@ranga>** - ta wiadomość reaction roles, będzie usuwać podaną rangę, gdy użytkownik doda sobie jakąś rolę poprzez tą wiadomość.");
+            message.channel.send(embed);
+        } else if(settings) {
+            let argsArray = m.content.split(" ");
+            let cmd = argsArray[0];
+            let args = argsArray.slice(1);
+            
+            if(cmd === "verifySystem") {
+                let roleToRemove = m.mentions.roles.first();
+                if(!roleToRemove) return message.channel.send(":x: Podaj rangę!");
+
+                if(configs.split("-").length > 0) configs += `-verifySystem:${roleToRemove.id}`;
+                else configs += `verifySystem:${roleToRemove.id}`;
+
+                message.channel.send(":white_check_mark: Zmieniono ustawienie *verifySystem* dla tej wiadomości!");
+            } else if(cmd === "ok") {
+                if(sent === 0) {
+                    success = false;
+                    return collector.stop();
+                } else {
+                    success = true;
+                    return collector.stop();
+                }
+            } else if(cmd === "cancel") {
+                success = false;
+                return collector.stop();
+            }
         } else if(m.content === "ok") {
             if(sent === 0) {
                 success = false;
@@ -105,7 +138,7 @@ module.exports.run = async (bot, message, args, database) => {
                                 .setDescription(`${text}`);
 
                                 channel.send(embed).then(async m => {
-                                    database.query(`INSERT INTO reaction_roles VALUES(NULL, "${m.id}", "${channel.id}", "${rolesTextToDB}", "${emojisTextToDB}")`, async (err) => {
+                                    database.query(`INSERT INTO reaction_roles VALUES(NULL, "${m.id}", "${channel.id}", "${rolesTextToDB}", "${emojisTextToDB}", "${configs}")`, async (err) => {
                                         if(err) {
                                             message.channel.send(`:x: Wystąpił błąd podczas dodawania do bazy danych! Spróbuj ponownie później.`);
                                             console.log(err);

@@ -11,8 +11,8 @@ const experiencePerMessage = 5;
 const prefix = "/";
 const version = 0.1;
 
-const tasksChannelID = "670227462655049728";
-const guildID = "553913839108882432";
+const tasksChannelID = "670227462655049728"; //IMPORTANT
+const guildID = "553913839108882432"; //IMPORTANT
 
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
@@ -317,5 +317,97 @@ bot.on('messageReactionRemove', async (reaction, member) => {
         reaction.message.guild.members.find('id', member.id).removeRole(roleToRemove);
     });
 });
+
+bot.on('guildMemberAdd', member => {
+    sendWelcomeText(member);
+});
+
+bot.on('guildMemberRemove', member => {
+    sendByeText(member);
+});
+
+function sendWelcomeText(member) {
+    if(member.id === bot.user.id) return;
+
+    database.query(`SELECT * FROM config WHERE id=4 OR id=6 OR id=8`, (err, rows) => { //Welcome messages properties have id 4, 6 and 8! IMPORTANT!
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return console.log("Sending welcome message failed! rows.length = 0");
+
+        if(rows[2].value === "false") return;
+        if(rows[1].value === "") return;
+        if(rows[0].value === "") return;
+
+        var text = rows[0].value;
+        var channelID = rows[1].value;
+        var channel = member.guild.channels.find('id', channelID);
+
+        text = text.replace('{user}', `${member}`);
+
+        channel.send(text);
+    });
+}
+
+function sendByeText(member) {
+    if(member.id === bot.user.id) return;
+
+    database.query(`SELECT * FROM config WHERE id=5 OR id=7 OR id=9`, (err, rows) => { //Bye messages properties have id 5, 7, 9! IMPORTANT!
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return console.log("Sending bye message failed! rows.length = 0");
+
+        if(rows[2].value === "false") return;
+        if(rows[1].value === "") return;
+        if(rows[0].value === "") return;
+
+        var text = rows[0].value;
+        var channelID = rows[1].value;
+        var channel = member.guild.channels.find('id', channelID);
+
+        text = text.replace('{user}', `${member.user.username}`);
+
+        channel.send(text);
+    });
+}
+
+setTimeout(async function() {
+    database.query(`SELECT * FROM administration`, (err, rows) => {
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return console.log("Updating administration table failed! rows.length = 0");
+
+        for(var i = 0; i < rows.length; i++) {
+            var member = bot.guilds.find('id', guildID).members.find('id', rows[i].discordID);
+            var removed = false;
+            if(member === null) {
+                removed = true;
+                console.log(`Removing ${member.user.username} from administration table...`);
+                database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
+            }
+
+            var haveRole = member.roles.find('id', "713994009944522863");
+            if(haveRole === null && !removed) {
+                console.log(`Removing ${member.user.username} from administration table...`);
+                database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
+            }
+        }
+
+        bot.guilds.find('id', guildID).members.forEach(member => {
+            var haveRole = member.roles.find('id', "713994009944522863");
+
+            if(haveRole != null) {
+                var inTable = false;
+                for(var j = 0; j < rows.length; j++) {
+                    if(rows[j].discordID === member.id) inTable = true;
+                }
+
+                if(!inTable) {
+                    console.log(`Adding ${member.user.username} to administration table...`);
+                    database.query(`INSERT INTO administration VALUES(NULL, "${member.id}", 0)`, console.log());
+                }
+            }
+        });
+    });
+}, 600000);
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');

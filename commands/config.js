@@ -21,6 +21,7 @@ module.exports.run = async (bot, message, args, database) => {
         if(rows.length < 1) return response(message, ":x: Podano złą nazwę ustawienia! Jeżeli potrzebujesz pełnej listy dostępnych ustawień, wpisz **/help configs**.");
         
         var wrongTypeOfValue = false;
+        var channel = false;
         switch(rows[0].allowedValues) {
             case "number": {
                 var type = typeof args[1];
@@ -31,10 +32,16 @@ module.exports.run = async (bot, message, args, database) => {
                 if(args[1] != "true" && args[1] != "false") wrongTypeOfValue = true;
                 break;
             }
+            case "channel": {
+                if(message.mentions.channels.size < 1) wrongTypeOfValue = true;
+                else channel = true;
+                break;
+            }
         }
 
         if(wrongTypeOfValue) return response(message, ":x: Podano nieprawidłowy typ wartości! Jeżeli nie wiesz, jaki typ wartości jest dozwolony w tym ustawieniu, wpisz **/help configs**.");
-    
+        if(channel) args[1] = message.mentions.channels.first().id;
+        
         if(rows[0].value === args[1]) return response(message, `:x: Ta opcja ma już aktualnie ma taką wartość!`);
 
         var lastValue = rows[0].value;

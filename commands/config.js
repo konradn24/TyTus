@@ -12,7 +12,7 @@ module.exports.run = async (bot, message, args, database) => {
         return message.channel.send(":x: Wprowadź nową wartość dla tego ustawienia!");
     }
     
-    args.slice(1);
+    args[1] = args.slice(1).join(" ");
 
     message.channel.send(loading);
 

@@ -51,6 +51,12 @@ module.exports.run = async (bot, message, args, database) => {
                 }
             }
 
+            if(thisXp === undefined) {
+                thisXp = 0;
+                thisLevel = 1;
+                thisTotalXp = 0;
+            }
+
             var nextLevel = thisLevel * 50;
             response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **${thisXp}** / **${nextLevel}** (**${Math.floor(thisXp / nextLevel * 100)}%**) \n Suma całego zdobytego XP: **${thisTotalXp}** \n Poziom: **${thisLevel}**`);
         });

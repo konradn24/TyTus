@@ -108,8 +108,6 @@ bot.on('message', async message =>{
                 let xpOnThisServer = decode1(rows[0].xp);
                 let levelOnThisServer = decode1(rows[0].level);
                 let totalXpOnThisServer = decode1(rows[0].totalXp);
-                
-                console.log(xpOnThisServer[1]);
 
                 for(var i = 0; i < xpOnThisServer.length; i++) {
                     if(xpOnThisServer[i].startsWith(message.guild.id)) {

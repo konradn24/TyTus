@@ -11,11 +11,23 @@ module.exports.run = async (bot, message, args, database) => {
     database.query(`SELECT * FROM config WHERE name = "${args[0]}"`, (err, rows) => {
         if(err) {
             console.log(err);
-            response(message, ":x: Wystąpił błąd podczas odczytywania informacji z bazy danych! Spróbuj ponownie później.");
+            response(message, ":x: Wystąpił błąd podczas odczytywania informacji z bazy danych (1)! Spróbuj ponownie później.");
         } else {
             if(rows.length < 1) return message.channel.send(":x: Opcja o podanej nazwie nie istnieje! Jeżeli potrzebujesz pełnej listy dostępnych ustawień, zajrzyj tutaj: **/help configs**.");
 
-            response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${rows[0].value}*.`);
+            database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
+                if(err1) {
+                    console.log(err1);
+                    return response(message, ":x: Wystąpił błąd podczas odczytywania informacji z bazy danych (2)! Spróbuj ponownie później.");
+                }
+
+                if(rows1.length < 1) return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${rows[0].value}*`);
+
+                let config = decode1(rows1[0].config);
+                var configID = rows[0].id - 1;
+
+                response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${config[configID]}*`);
+            });
         }
     });
 }
@@ -29,4 +41,22 @@ module.exports.config = {
 
 function response(message, response) {
     message.channel.send(response);
+}
+
+function decode1(text) {
+    let fields = text.split("/NF");
+
+    return fields;
+}
+
+function decode2(field) {
+    let parts = field.split(":");
+
+    return parts;
+}
+
+function decode3(part) {
+    let details = part.split(",");
+
+    return details;
 }

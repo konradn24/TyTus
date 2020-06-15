@@ -31,55 +31,28 @@ module.exports.run = async (bot, message, args, database) => {
 
             if(rows.length < 1) return response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **0** / **50** (**0%**) \n Suma całego zdobytego XP: **0** \n Poziom: **1**`);
         
-            database.query(`SELECT * FROM members WHERE totalXp LIKE "%${message.guild.id}%"`, (err1, rows1) => {
-                if(err1) {
-                    console.log(err1);
-                    return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (2). Spróbuj ponownie później.");
+            let xpOnServer = decode1(rows[0].xp);
+            let levelOnServer = decode1(rows[0].level);
+            let totalXpOnServer = decode1(rows[0].totalXp);
+
+            var thisXp;
+            var thisLevel;
+            var thisTotalXp;
+
+            for(var i = 0; i < xpOnServer.length; i++) {
+                let xpParts = decode2(xpOnServer[i]);
+                let levelParts = decode2(levelOnServer[i]);
+                let totalXpParts = decode2(totalXpOnServer[i]);
+
+                if(xpParts[0] === message.guild.id) {
+                    thisXp = xpParts[1];
+                    thisLevel = levelParts[1];
+                    thisTotalXp = totalXpParts[1];
                 }
+            }
 
-                console.log(rows1.length);
-
-                var xpArray = new Array(rows1.length);
-                var levelArray = new Array(rows1.length);
-                var totalXpArray = new Array(rows1.length);
-                for(var i = 0; i < rows1.length; i++) {
-                    let xpServer = decode1(rows1[i].xp);
-                    let levelServer = decode1(rows1[i].level);
-                    let totalXpServer = decode1(rows1[i].totalXp);
-                    for(var j = 0; j < totalXpServer.length; j++) {
-                        if(totalXpServer[j].startsWith(message.guild.id)) {
-                            xpArray[i] = member.id + ":" + decode2(xpServer[j])[1];
-                            levelArray[i] = member.id + ":" + decode2(levelServer[j])[1];
-                            totalXpArray[i] = member.id + ":" + decode2(totalXpServer[j])[1];
-                        }
-                    }
-                }
-
-                totalXpArray.sort();
-
-                var rank = totalXpArray.length + 1;
-                var thisXp;
-                var thisLevel;
-                var thisTotalXp;
-                for(var i = 0; i < totalXpArray.length; i++) {
-                    var id = decode2(totalXpArray[i])[0];
-                    var tx = decode2(totalXpArray[i])[1];
-                    if(id === member.id) {
-                        rank = i + 1;
-                        thisTotalXp = tx;
-
-                        for(var j = 0; j < totalXpArray.length; j++) {
-                            if(decode2(xpArray[j])[0] === member.id) {
-                                thisXp = decode2(xpArray[j])[1];
-                                thisLevel = decode2(levelArray[j])[1];
-                            }
-                        }
-                    }
-                }
-
-                var nextLevel = thisLevel * 50;
-                response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **${thisXp}** / **${nextLevel}** (**${Math.floor(thisXp / nextLevel * 100)}%**) \n Suma wszystkich zdobytych PD: **${thisTotalXp}** \n Poziom: **${thisLevel}** \n Miejsce w rankingu: **#${rank}**`);
-            });
+            var nextLevel = thisLevel * 50;
+            response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **${thisXp}** / **${nextLevel}** (**${Math.floor(thisXp / nextLevel * 100)}%**) \n Suma całego zdobytego XP: **${thisTotalXp}** \n Poziom: **${thisLevel}** \n Miejsce w rankingu: **#${rank}**`);
         });
     });
 }

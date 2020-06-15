@@ -18,7 +18,7 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 const database = mysql.createConnection({
-    host: 'db4free.net',
+    host: '85.10.205.173',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
@@ -42,17 +42,17 @@ bot.on('ready', async () => {
     bot.guilds.find('id', guildID).channels.find('id', tasksChannelID).fetchMessages();
 
     //Fetching reaction roles messages
-    database.query(`SELECT * FROM reaction_roles`, (err, rows) => {
-        if(err) return console.log(err);
+    // database.query(`SELECT * FROM reaction_roles`, (err, rows) => {
+    //     if(err) return console.log(err);
 
-        if(rows.length < 1) return;
+    //     if(rows.length < 1) return;
 
-        for(var i = 0; i < rows.length; i++) {
-            var channelID = rows[i].channelID;
+    //     for(var i = 0; i < rows.length; i++) {
+    //         var channelID = rows[i].channelID;
 
-            bot.channels.find('id', channelID).fetchMessages();
-        }
-    });
+    //         bot.channels.find('id', channelID).fetchMessages();
+    //     }
+    // });
 });
 
 const fs = require('fs');
@@ -86,42 +86,85 @@ bot.on('message', async message =>{
 
     var currentXp = -1, currentLevel = 0, currentTotalXp;
 
-    database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
+    database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (errC, rowsC) => {
         if(errC) return console.log(errC);
 
-        if(rowsC[0].value === "false") return;
+        if(rowsC.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${message.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
+
+        let configs = decode1(rowsC[0].config);
+        if(configs[2] === "false") return;
 
         database.query(`SELECT * FROM members WHERE discordID = "${message.author.id}"`, (err, rows) => {
             if(err || rows === undefined) return console.log(err);
 
             let sql;
             if(rows.length < 1) {
-                sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", ${experiencePerMessage}, 1, ${experiencePerMessage})`;
+                sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", "${message.guild.id}:${experiencePerMessage}/NF", "${message.guild.id}:1/NF", "${message.guild.id}:${experiencePerMessage}/NF")`;
             } else {
-                currentXp = rows[0].xp;
-                currentLevel = rows[0].level;
-                currentTotalXp = rows[0].totalXp;
-                sql = `UPDATE members SET xp = ${currentXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`;
-                database.query(`UPDATE members SET totalXp = ${currentTotalXp + experiencePerMessage} WHERE discordID = "${message.author.id}"`);
+                cleanLastTag(rows[0].xp);
 
-                if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
+                let xpOnThisServer = decode1(rows[0].xp);
+                let levelOnThisServer = decode1(rows[0].level);
+                let totalXpOnThisServer = decode1(rows[0].totalXp);
+                
+                console.log(xpOnThisServer[1]);
+
+                for(var i = 0; i < xpOnThisServer.length; i++) {
+                    if(xpOnThisServer[i].startsWith(message.guild.id)) {
+                        currentXp = decode2(xpOnThisServer[i])[1];
+                        currentLevel = decode2(levelOnThisServer[i])[1];
+                        currentTotalXp = decode2(totalXpOnThisServer[i])[1];
+
+                        currentXp = parseInt(currentXp);
+                        currentLevel = parseInt(currentLevel);
+                        currentTotalXp = parseInt(currentTotalXp);
+
+                        var changedTextXp = rows[0].xp;
+                        var changedTextTotalXp = rows[0].totalXp;
+                        changedTextXp = changedTextXp.replace(`${message.guild.id}:${currentXp}`, `${message.guild.id}:${currentXp + experiencePerMessage}`);
+                        changedTextTotalXp = changedTextTotalXp.replace(`${message.guild.id}:${currentTotalXp}`, `${message.guild.id}:${currentTotalXp + experiencePerMessage}`);
+
+                        sql = `UPDATE members SET xp = "${changedTextXp}" WHERE discordID = "${message.author.id}"`;
+                        database.query(`UPDATE members SET totalXp = "${changedTextTotalXp}" WHERE discordID = "${message.author.id}"`);
+
+                        if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
+                    }
+                }
+
+                if(currentXp === -1) {
+                    var changedTextXp = rows[0].xp;
+                    var changedTextLevel = rows[0].level;
+                    var changedTextTotalXp = rows[0].totalXp;
+
+                    changedTextXp += `${message.guild.id}:0/NF`;
+                    changedTextLevel += `${message.guild.id}:1/NF`;
+                    changedTextTotalXp += `${message.guild.id}:0/NF`;
+
+                    database.query(`UPDATE members SET xp = "${changedTextXp}" WHERE discordID = "${message.author.id}"`);
+                    database.query(`UPDATE members SET level = "${changedTextLevel}" WHERE discordID = "${message.author.id}"`);
+                    database.query(`UPDATE members SET totalXp = "${changedTextTotalXp}" WHERE discordID = "${message.author.id}"`);
+
+                    if(rows[0].username != message.author.username) database.query(`UPDATE members SET username = "${message.author.username}" WHERE discordID = "${message.author.id}"`);
+                }
             }
 
             database.query(sql, (err, results) => {
                 var nextLevel = currentLevel * 50;
                 if(nextLevel <= currentXp) {
-                    database.query(`UPDATE members SET xp = 0 WHERE discordID = "${message.author.id}"`, console.log);
-                    database.query(`UPDATE members SET level = ${currentLevel + 1} WHERE discordID = "${message.author.id}"`, console.log);
+                    var changedTextXp = rows[0].xp;
+                    var changedTextLevel = rows[0].level;
+                    changedTextXp = changedTextXp.replace(`${message.guild.id}:${currentXp}`, `${message.guild.id}:0`);
+                    changedTextLevel = changedTextLevel.replace(`${message.guild.id}:${currentLevel}`, `${message.guild.id}:${currentLevel + 1}`)
 
-                    database.query(`SELECT * FROM config WHERE id = 1 OR id = 2`, (err, rows) => { //IMPORTANT !!! config named msgOnLevelUp has id 1, sendMsgOnLevelUp has id 2
-                        if(err) return console.log(err);
-                        if(rows[1].value === "true") {
-                            var text = rows[0].value;
-                            text = text.replace('{user}', `${message.guild.members.find("id", message.author.id)}`);
-                            text = text.replace('{level}', `${currentLevel + 1}`);
-                            message.channel.send(`${text}`);
-                        }
-                    });
+                    database.query(`UPDATE members SET xp = "${changedTextXp}" WHERE discordID = "${message.author.id}"`, console.log);
+                    database.query(`UPDATE members SET level = "${changedTextLevel}" WHERE discordID = "${message.author.id}"`, console.log);
+
+                    if(configs[1] === "true") {
+                        var text = configs[0];
+                        text = text.replace('{user}', `${message.guild.members.find("id", message.author.id)}`);
+                        text = text.replace('{level}', `${currentLevel + 1}`);
+                        message.channel.send(`${text}`);
+                    }
                 }
             });
         });
@@ -370,44 +413,69 @@ function sendByeText(member) {
     });
 }
 
-setTimeout(async function() {
-    database.query(`SELECT * FROM administration`, (err, rows) => {
-        if(err) return console.log(err);
+// setTimeout(async function() {
+//     database.query(`SELECT * FROM administration`, (err, rows) => {
+//         if(err) return console.log(err);
 
-        if(rows.length < 1) return console.log("Updating administration table failed! rows.length = 0");
+//         if(rows.length < 1) return console.log("Updating administration table failed! rows.length = 0");
 
-        for(var i = 0; i < rows.length; i++) {
-            var member = bot.guilds.find('id', guildID).members.find('id', rows[i].discordID);
-            var removed = false;
-            if(member === null) {
-                removed = true;
-                console.log(`Removing ${member.user.username} from administration table...`);
-                database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
-            }
+//         for(var i = 0; i < rows.length; i++) {
+//             var member = bot.guilds.find('id', guildID).members.find('id', rows[i].discordID);
+//             var removed = false;
+//             if(member === null) {
+//                 removed = true;
+//                 console.log(`Removing ${member.user.username} from administration table...`);
+//                 database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
+//             }
 
-            var haveRole = member.roles.find('id', "713994009944522863");
-            if(haveRole === null && !removed) {
-                console.log(`Removing ${member.user.username} from administration table...`);
-                database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
-            }
-        }
+//             var haveRole = member.roles.find('id', "713994009944522863");
+//             if(haveRole === null && !removed) {
+//                 console.log(`Removing ${member.user.username} from administration table...`);
+//                 database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
+//             }
+//         }
 
-        bot.guilds.find('id', guildID).members.forEach(member => {
-            var haveRole = member.roles.find('id', "713994009944522863");
+//         bot.guilds.find('id', guildID).members.forEach(member => {
+//             var haveRole = member.roles.find('id', "713994009944522863");
 
-            if(haveRole != null) {
-                var inTable = false;
-                for(var j = 0; j < rows.length; j++) {
-                    if(rows[j].discordID === member.id) inTable = true;
-                }
+//             if(haveRole != null) {
+//                 var inTable = false;
+//                 for(var j = 0; j < rows.length; j++) {
+//                     if(rows[j].discordID === member.id) inTable = true;
+//                 }
 
-                if(!inTable) {
-                    console.log(`Adding ${member.user.username} to administration table...`);
-                    database.query(`INSERT INTO administration VALUES(NULL, "${member.id}", 0)`, console.log());
-                }
-            }
-        });
-    });
-}, 600000);
+//                 if(!inTable) {
+//                     console.log(`Adding ${member.user.username} to administration table...`);
+//                     database.query(`INSERT INTO administration VALUES(NULL, "${member.id}", 0)`, console.log());
+//                 }
+//             }
+//         });
+//     });
+// }, 600000);
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
+
+function cleanLastTag(text) {
+    var toClean = text;
+    toClean = toClean.substr(0, toClean.length - 3);
+
+    return toClean;
+}
+
+function decode1(text) {
+    let fields = text.split("/NF");
+
+    return fields;
+}
+
+function decode2(field) {
+    let parts = field.split(":");
+
+    return parts;
+}
+
+function decode3(part) {
+    let details = part.split(",");
+
+    return details;
+}

@@ -15,6 +15,9 @@ module.exports.run = async (bot, message, args, database) => {
         } else {
             if(rows.length < 1) return message.channel.send(":x: Opcja o podanej nazwie nie istnieje! Jeżeli potrzebujesz pełnej listy dostępnych ustawień, zajrzyj tutaj: **/help configs**.");
 
+            var isChannel = false;
+            if(rows[0].allowedValues === "channel") isChannel = true;
+
             database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
                 if(err1) {
                     console.log(err1);
@@ -25,6 +28,11 @@ module.exports.run = async (bot, message, args, database) => {
 
                 let config = decode1(rows1[0].config);
                 var configID = rows[0].id - 1;
+
+                if(isChannel) {
+                    var channel = message.guild.channels.find('id', config[configID]);
+                    return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${channel}*`)
+                }
 
                 response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${config[configID]}*`);
             });

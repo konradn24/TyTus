@@ -31,7 +31,7 @@ module.exports.run = async (bot, message, args, database) => {
 
             if(rows.length < 1) return response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **0** / **50** (**0%**) \n Suma całego zdobytego XP: **0** \n Poziom: **1**`);
         
-            database.query(`SELECT * FROM members WHERE totalXp LIKE "%${message.guild.id}%"`, (err1, rows1) => {
+            database.query(`SELECT * FROM members WHERE totalXp LIKE "${message.guild.id}%"`, (err1, rows1) => {
                 if(err1) {
                     console.log(err1);
                     return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (2). Spróbuj ponownie później.");

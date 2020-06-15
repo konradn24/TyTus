@@ -372,17 +372,19 @@ bot.on('guildMemberRemove', member => {
 function sendWelcomeText(member) {
     if(member.id === bot.user.id) return;
 
-    database.query(`SELECT * FROM config WHERE id=4 OR id=6 OR id=8`, (err, rows) => { //Welcome messages properties have id 4, 6 and 8! IMPORTANT!
+    database.query(`SELECT * FROM servers WHERE discordID = "${member.guild.id}"`, (err, rows) => { //Welcome messages properties have id 3, 5 and 7 (4, 6, 8)! IMPORTANT!
         if(err) return console.log(err);
 
-        if(rows.length < 1) return console.log("Sending welcome message failed! rows.length = 0");
+        if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
 
-        if(rows[2].value === "false") return;
-        if(rows[1].value === "") return;
-        if(rows[0].value === "") return;
+        let config = decode1(rows[0].config);
 
-        var text = rows[0].value;
-        var channelID = rows[1].value;
+        if(config[3].value === "") return;
+        if(config[5].value === "N" || config[5].value === "") return;
+        if(config[7].value === "false") return;
+
+        var text = config[3].value;
+        var channelID = config[5].value;
         var channel = member.guild.channels.find('id', channelID);
 
         text = text.replace('{user}', `${member}`);
@@ -394,17 +396,19 @@ function sendWelcomeText(member) {
 function sendByeText(member) {
     if(member.id === bot.user.id) return;
 
-    database.query(`SELECT * FROM config WHERE id=5 OR id=7 OR id=9`, (err, rows) => { //Bye messages properties have id 5, 7, 9! IMPORTANT!
+    database.query(`SELECT * FROM servers WHERE discordID = "${member.guild.id}"`, (err, rows) => { //Bye messages properties have id 4, 6, 8 (5, 7, 9)! IMPORTANT!
         if(err) return console.log(err);
 
-        if(rows.length < 1) return console.log("Sending bye message failed! rows.length = 0");
+        if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
 
-        if(rows[2].value === "false") return;
-        if(rows[1].value === "") return;
-        if(rows[0].value === "") return;
+        let config = decode1(rows[0].config);
 
-        var text = rows[0].value;
-        var channelID = rows[1].value;
+        if(config[4].value === "") return;
+        if(config[6].value === "N" || config[6].value === "") return;
+        if(config[8].value === "false") return;
+
+        var text = config[4].value;
+        var channelID = config[6].value;
         var channel = member.guild.channels.find('id', channelID);
 
         text = text.replace('{user}', `${member.user.username}`);

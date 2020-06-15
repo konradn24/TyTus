@@ -101,10 +101,6 @@ bot.on('message', async message =>{
             if(rows.length < 1) {
                 sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", "${message.guild.id}:${experiencePerMessage}/NF", "${message.guild.id}:1/NF", "${message.guild.id}:${experiencePerMessage}/NF")`;
             } else {
-                rows[0].xp = cleanLastTag(rows[0].xp);
-                rows[0].level = cleanLastTag(rows[0].level);
-                rows[0].totalXp = cleanLastTag(rows[0].totalXp);
-
                 let xpOnThisServer = decode1(rows[0].xp);
                 let levelOnThisServer = decode1(rows[0].level);
                 let totalXpOnThisServer = decode1(rows[0].totalXp);
@@ -459,13 +455,6 @@ function sendByeText(member) {
 // }, 600000);
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
-
-function cleanLastTag(text) {
-    var toClean = text;
-    toClean = toClean.substr(0, toClean.length - 3);
-
-    return toClean;
-}
 
 function decode1(text) {
     let fields = text.split("/NF");

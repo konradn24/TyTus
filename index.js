@@ -89,7 +89,13 @@ bot.on('message', async message =>{
     database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (errC, rowsC) => {
         if(errC) return console.log(errC);
 
-        if(rowsC.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${message.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
+        if(rowsC.length < 1) return database.query(`SELECT * FROM config`, (err, rows) => {
+            if(err) return console.log(err);
+
+            if(rows.length < 1) return console.log("Adding server to database (when tried to add XP) failed! rows.length < 1");
+
+            database.query(`INSERT INTO servers VALUES(NULL, "${message.guild.id}", "${rows[0].value}/NF${rows[1].value}/NF${rows[2].value}/NF${rows[3].value}/NF${rows[4].value}/NF${rows[5].value}/NF${rows[6].value}/NF${rows[7].value}/NF${rows[8].value}")`, () => {lgChannel.send(`Added server ${message.guild.name} to database!`);});
+        });
 
         let configs = decode1(rowsC[0].config);
         if(configs[2] === "false") return;
@@ -371,7 +377,13 @@ function sendWelcomeText(member) {
     database.query(`SELECT * FROM servers WHERE discordID = "${member.guild.id}"`, (err, rows) => { //Welcome messages properties have id 3, 5 and 7 (4, 6, 8)! IMPORTANT!
         if(err) return console.log(err);
 
-        if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
+        if(rows.length < 1) return database.query(`SELECT * FROM config`, (err1, rows1) => {
+            if(err1) return console.log(err1);
+
+            if(rows1.length < 1) return console.log("Adding server to database (when tried to send welcome message) failed! rows1.length < 1");
+
+            database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "${rows1[0].value}/NF${rows1[1].value}/NF${rows1[2].value}/NF${rows1[3].value}/NF${rows1[4].value}/NF${rows1[5].value}/NF${rows1[6].value}/NF${rows1[7].value}/NF${rows1[8].value}")`, () => {lgChannel.send(`Added server ${member.guild.name} to database!`);});
+        });
 
         let config = decode1(rows[0].config);
 
@@ -395,7 +407,13 @@ function sendByeText(member) {
     database.query(`SELECT * FROM servers WHERE discordID = "${member.guild.id}"`, (err, rows) => { //Bye messages properties have id 4, 6, 8 (5, 7, 9)! IMPORTANT!
         if(err) return console.log(err);
 
-        if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
+        if(rows.length < 1) return database.query(`SELECT * FROM config`, (err1, rows1) => {
+            if(err1) return console.log(err1);
+
+            if(rows1.length < 1) return console.log("Adding server to database (when tried to send welcome message) failed! rows1.length < 1");
+
+            database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "${rows1[0].value}/NF${rows1[1].value}/NF${rows1[2].value}/NF${rows1[3].value}/NF${rows1[4].value}/NF${rows1[5].value}/NF${rows1[6].value}/NF${rows1[7].value}/NF${rows1[8].value}")`, () => {lgChannel.send(`Added server ${member.guild.name} to database!`);});
+        });
 
         let config = decode1(rows[0].config);
         

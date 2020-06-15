@@ -52,7 +52,7 @@ module.exports.run = async (bot, message, args, database) => {
             }
 
             var nextLevel = thisLevel * 50;
-            response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **${thisXp}** / **${nextLevel}** (**${Math.floor(thisXp / nextLevel * 100)}%**) \n Suma całego zdobytego XP: **${thisTotalXp}** \n Poziom: **${thisLevel}** \n Miejsce w rankingu: **#${rank}**`);
+            response(message, `\`STAN AKTYWNOŚCI DLA ${member.displayName}\` \n Punkty doświadczenia: **${thisXp}** / **${nextLevel}** (**${Math.floor(thisXp / nextLevel * 100)}%**) \n Suma całego zdobytego XP: **${thisTotalXp}** \n Poziom: **${thisLevel}**`);
         });
     });
 }

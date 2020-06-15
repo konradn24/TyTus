@@ -41,18 +41,33 @@ module.exports.run = async (bot, message, args, database) => {
 
         if(wrongTypeOfValue) return response(message, ":x: Podano nieprawidłowy typ wartości! Jeżeli nie wiesz, jaki typ wartości jest dozwolony w tym ustawieniu, wpisz **/help configs**.");
         if(channel) args[1] = message.mentions.channels.first().id;
-        
-        if(rows[0].value === args[1]) return response(message, `:x: Ta opcja ma już aktualnie ma taką wartość!`);
 
-        var lastValue = rows[0].value;
+        database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
+            let config = decode1(rows1[0].config);
+            var configID = rows[0].id - 1;
+            var thisConfig = config[configID];
 
-        database.query(`UPDATE config SET value = "${args[1]}" WHERE name = "${args[0]}"`, (err, rows) => {
-            if(err) {
-                console.log(err);
-                response(message, ":x: Niestety zmiana ustawienia się nie powiodła! Spróbuj ponownie później.");
-            } else {
-                response(message, `:white_check_mark: Pomyślnie zmieniono ustawienie ${args[0]}. Poprzednia wartość: *${lastValue}*. Nowa wartość: *${args[1]}*.`);
+            if(thisConfig === args[1]) return response(message, `:x: Ta opcja ma już aktualnie ma taką wartość!`);
+
+            var lastValue = thisConfig;
+
+            config[configID] = args[1];
+
+            var changedTextConfig = "";
+            for(var i = 0; i < config.length; i++) {
+                changedTextConfig += config[i] + "/NF";
             }
+
+            changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
+
+            database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, (err, rows) => {
+                if(err) {
+                    console.log(err);
+                    response(message, ":x: Niestety zmiana ustawienia się nie powiodła! Spróbuj ponownie później.");
+                } else {
+                    response(message, `:white_check_mark: Pomyślnie zmieniono ustawienie ${args[0]}. Poprzednia wartość: *${lastValue}*. Nowa wartość: *${args[1]}*.`);
+                }
+            });
         });
     });
 }
@@ -66,4 +81,22 @@ module.exports.config = {
 
 function response(message, response) {
     message.channel.send(response);
+}
+
+function decode1(text) {
+    let fields = text.split("/NF");
+
+    return fields;
+}
+
+function decode2(field) {
+    let parts = field.split(":");
+
+    return parts;
+}
+
+function decode3(part) {
+    let details = part.split(",");
+
+    return details;
 }

@@ -375,12 +375,12 @@ function sendWelcomeText(member) {
 
         let config = decode1(rows[0].config);
 
-        if(config[3].value === "") return;
-        if(config[5].value === "N" || config[5].value === "") return;
-        if(config[7].value === "false") return;
+        if(config[3] === "") return;
+        if(config[5] === "N" || config[5] === "") return;
+        if(config[7] === "false") return;
 
-        var text = config[3].value;
-        var channelID = config[5].value;
+        var text = config[3];
+        var channelID = config[5];
         var channel = member.guild.channels.find('id', channelID);
 
         text = text.replace('{user}', `${member}`);
@@ -398,14 +398,13 @@ function sendByeText(member) {
         if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
 
         let config = decode1(rows[0].config);
-        console.log(config[6]);
         
-        if(config[4].value === "") return;
-        if(config[6].value === "N" || config[6].value === "") return;
-        if(config[8].value === "false") return;
+        if(config[4] === "") return;
+        if(config[6] === "N" || config[6] === "") return;
+        if(config[8] === "false") return;
 
-        var text = config[4].value;
-        var channelID = config[6].value;
+        var text = config[4];
+        var channelID = config[6];
         var channel = member.guild.channels.find('id', channelID);
 
         text = text.replace('{user}', `${member.user.username}`);

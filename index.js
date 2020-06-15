@@ -402,7 +402,8 @@ function sendByeText(member) {
         if(rows.length < 1) return database.query(`INSERT INTO servers VALUES(NULL, "${member.guild.id}", "Gratki {user}, właśnie zdobyłeś {level} poziom!/NFfalse/NFfalse/NFWitaj {user} na naszym serwerze!/NF{user} właśnie opuścił serwer :cry:/NFN/NFN/NFfalse/NFfalse")`);
 
         let config = decode1(rows[0].config);
-
+        console.log(config.length);
+        
         if(config[4].value === "") return;
         if(config[6].value === "N" || config[6].value === "") return;
         if(config[8].value === "false") return;

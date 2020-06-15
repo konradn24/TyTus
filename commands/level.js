@@ -48,9 +48,9 @@ module.exports.run = async (bot, message, args, database) => {
                     let totalXpServer = decode1(rows1[i].totalXp);
                     for(var j = 0; j < totalXpServer.length; j++) {
                         if(totalXpServer[j].startsWith(message.guild.id)) {
-                            xpArray[i] = member.id + ":" + decode2(xpServer[i])[1];
-                            levelArray[i] = member.id + ":" + decode2(levelServer[i])[1];
-                            totalXpArray[i] = member.id + ":" + decode2(totalXpServer[i])[1];
+                            xpArray[i] = member.id + ":" + decode2(xpServer[j])[1];
+                            levelArray[i] = member.id + ":" + decode2(levelServer[j])[1];
+                            totalXpArray[i] = member.id + ":" + decode2(totalXpServer[j])[1];
                         }
                     }
                 }

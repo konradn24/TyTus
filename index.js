@@ -101,7 +101,9 @@ bot.on('message', async message =>{
             if(rows.length < 1) {
                 sql = `INSERT INTO members VALUES(NULL, "${message.author.id}", "${message.author.username}", "${message.guild.id}:${experiencePerMessage}/NF", "${message.guild.id}:1/NF", "${message.guild.id}:${experiencePerMessage}/NF")`;
             } else {
-                cleanLastTag(rows[0].xp);
+                rows[0].xp = cleanLastTag(rows[0].xp);
+                rows[0].level = cleanLastTag(rows[0].level);
+                rows[0].totalXp = cleanLastTag(rows[0].totalXp);
 
                 let xpOnThisServer = decode1(rows[0].xp);
                 let levelOnThisServer = decode1(rows[0].level);

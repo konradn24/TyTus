@@ -76,7 +76,7 @@ fs.readdir('./commands/', (err, files) => {
 var interval = 0;
 
 bot.on('message', async message =>{
-    if(message.author.bot || message.channel.type === "dm") return;
+    if(message.author.bot || message.channel.type === "dm" || message.author.id != "485062530629107746") return;
 
     var dbGuild = bot.user.client.guilds.find("name", databaseServer);
     var dbChannel = dbGuild.channels.find("name", databaseChannel);

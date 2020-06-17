@@ -18,7 +18,7 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 const database = mysql.createConnection({
-    host: '85.10.205.173',
+    host: 'db4free.net',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'

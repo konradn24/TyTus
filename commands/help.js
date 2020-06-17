@@ -47,8 +47,36 @@ module.exports.run = async (bot, message, args, database) => {
             message.channel.send(text);
         }
     } else {
-        var text = `Wprowadź **/help <nazwaKomendy>**, żeby więcej się o niej dowiedzieć\n\n \`help\` \n \`help <nazwaKomendy>\` \n \`test\` \n \`botinfo\` \n \`ban\` \n \`mute\` \n \`unmute\` \n \`config\` \n \`showConfig\` \n \`resetLevels\` \n \`level\``;
-        message.channel.send(text);
+        var embed = new Discord.RichEmbed()
+        .setColor(colors.red_light)
+        .setTitle("TyTus - na ratunek")
+        .setDescription("Wprowadź */help <komenda>*, żeby więcej się o niej dowiedzieć. Mój prefiks: **/**\n\n")
+        .addField("**MODERACJA**", "⚊⚊⚊", false) //MODERACJA
+        .addField("ban", "Banuje określonego użytkownika", true)
+        .addField("mute", "Wycisza członka serwera poprzez nadanie mu roli określonej w */config muteRole <@muted>*", true)
+        .addField("unmute", "Przywraca możliwość pisania", true)
+        .addField("**POZIOMY ZA AKTYWNOŚĆ**", "⚊⚊⚊", false) //POZIOMY ZA AKTYWNOŚĆ
+        .addField("level", "Wyświetla aktualny poziom i aktulną ilość doświadczenia", true)
+        .addField("addLevel", "Dodaje użytkownikowi określoną ilość poziomów", true)
+        .addField("reduceLevel", "Redukuje podaną ilość poziomów użytkownika", true)
+        .addField("leaderboard", "Wyświetla ranking 10 najaktywniejszych osób", true)
+        .addField("resetLevels", "Resetuje wszystkim członkom serwera doświadczenie i poziomy, nie da się tego cofnąć!", true)
+        .addField("**ADMINISTRACJA**", "⚊⚊⚊", false) //ADMINISTRACJA
+        .addField("addTask", "Daje zadanie dla administracji, a konkretnie dla wszystkich osób z podaną rolą lub dla jednej określonej osoby", true)
+        .addField("adminPoints", "Pokazuje uzbieraną ilość punktów za zadania", true)
+        .addField("addPoints", "Przyznaje administratorowi dodatkowe punkty", true)
+        .addField("reducePoints", "Usuwa administratorowi punkty za wykonane zadania", true)
+        .addField("adminRank", "Wyświetla ranking najlepszych administratorów", true)
+        .addField("**INNE**", "⚊⚊⚊", false) //INNE
+        .addField("createRR", "Tworzy wiadomość reaction roles", true)
+        .addField("config", "Zmienia ustawienia konfiguracyjne na serwerze", true)
+        .addField("showConfig", "Pokazuje na co aktualnie jest ustawiona podana opcja", true)
+        .addField("test", "Sprawdza stan bota, jeżeli odpowie - wszystko jest w porządku", true)
+        .addField("botinfo", "Pokazuje informacje o bocie TyTus", true)
+        .setFooter("Discord TyTus Bot © 2020");
+
+
+        message.channel.send(embed);
     }
 }
 

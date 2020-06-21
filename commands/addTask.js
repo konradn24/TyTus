@@ -81,8 +81,8 @@ module.exports.run = async (bot, message, args, database) => {
         if(rows.length < 1) index = 1;
         else index = rows[0].id + 1;
 
-        var task = `**Zadanie ${index} dla ${member}**: ${text} |\n**Termin:** ${taskTime} |\n**Wykonano:** nie |`;
-        database.query(`INSERT INTO tasks VALUES(NULL, "${text}", "", ${time}, ${points}, "${member.id}", "${role}", "nie", "")`, console.log);
+        var task = `(${index}) **Zadanie dla ${member}**: ${text}\n**Termin:** ${taskTime}\n**Wykonano:** nie`;
+        database.query(`INSERT INTO tasks VALUES(NULL, "${text}", "${message.channel.id}", ${time}, ${points}, "${member.id}", "${role}", "nie", "")`, console.log);
         message.channel.send(task);
     });
 }

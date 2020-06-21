@@ -18,6 +18,14 @@ module.exports.run = async (bot, message, args, database) => {
                             values = "true / false";
                             break;
                         }
+                        case "channel": {
+                            values = "kanał";
+                            break;
+                        }
+                        case "role": {
+                            values = "rola";
+                            break;
+                        }
                         case "ALL": {
                             values = "wszystko (tekst, liczby)";
                             break;

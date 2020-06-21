@@ -1,7 +1,7 @@
 const Discord = require('discord.js')
 const colors = require('../colors.json');
 
-const loading = "Resetowanie poziomów...";
+const loading = "Resetowanie poziomów... Może to potrwać kilka (lub trochę więcej) minut...";
 
 var started = false;
 
@@ -23,28 +23,49 @@ module.exports.run = async (bot, message, args, database) => {
 
         response(message, loading);
 
-        database.query(`UPDATE members SET xp = 0`, (err, rows) => {
+        database.query(`SELECT * FROM members WHERE xp LIKE "%${message.guild.id}%"`, (err, rows) => {
             if(err) {
                 console.log(err);
-                return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (1)! Spróbuj ponownie później.");
+                return response(message, ":x: Wystąpił błąd! Spróbuj ponownie później.");
             }
 
-            database.query(`UPDATE members SET level = 1`, (err, rows) => {
-                if(err) {
-                    console.log(err);
-                    return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (2)! Spróbuj ponownie później.");
-                }
+            var count = 0;
 
-                database.query(`UPDATE members SET totalXp = 0`, (err, rows) => {
-                    if(err) {
-                        console.log(err);
-                        return response(message, ":x: Podczas resetu wystąpił nieoczekiwany błąd (3)! Spróbuj ponownie później.");
+            for(var i = 0; i < rows.length; i++) {
+                count++;
+
+                var xpOnServersText = rows[i].xp;
+                var totalXpOnServersText = rows[i].totalXp;
+                var levelOnServersText = rows[i].level;
+                let xpOnServers = decode1(xpOnServersText);
+                let totalXpOnServers = decode1(totalXpOnServersText);
+                let levelOnServers = decode1(levelOnServersText);
+
+                xpOnServers.forEach(element => {
+                    if(element.startsWith(message.guild.id)) {
+                        xpOnServersText = xpOnServersText.replace(element, `${message.guild.id}:0`);
                     }
-    
-                    response(message, ":white_check_mark: Pomyślnie zresetowano punkty i poziomy dla wszystkich osób w bazie danych!");
                 });
-            });
-        });
+
+                levelOnServers.forEach(element => {
+                    if(element.startsWith(message.guild.id)) {
+                        levelOnServersText = levelOnServersText.replace(element, `${message.guild.id}:1`);
+                    }
+                });
+
+                totalXpOnServers.forEach(element => {
+                    if(element.startsWith(message.guild.id)) {
+                        totalXpOnServersText = totalXpOnServersText.replace(element, `${message.guild.id}:0`);
+                    }
+                });
+
+                database.query(`UPDATE members SET xp = "${xpOnServersText}" WHERE id = ${rows[i].id}`);
+                database.query(`UPDATE members SET level = "${levelOnServersText}" WHERE id = ${rows[i].id}`);
+                database.query(`UPDATE members SET totalXp = "${totalXpOnServersText}" WHERE id = ${rows[i].id}`);
+            }
+
+            response(message, `:white_check_mark: Pomyślnie zresetowano poziomy dla ${count} użytkowników.`);
+        })
     }
 }
 
@@ -57,4 +78,22 @@ module.exports.config = {
 
 function response(message, response) {
     message.channel.send(response);
+}
+
+function decode1(text) {
+    let fields = text.split("/NF");
+
+    return fields;
+}
+
+function decode2(field) {
+    let parts = field.split(":");
+
+    return parts;
+}
+
+function decode3(part) {
+    let details = part.split(",");
+
+    return details;
 }

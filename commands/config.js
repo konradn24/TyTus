@@ -22,6 +22,7 @@ module.exports.run = async (bot, message, args, database) => {
         
         var wrongTypeOfValue = false;
         var channel = false;
+        var role = false;
         switch(rows[0].allowedValues) {
             case "number": {
                 var type = typeof args[1];
@@ -37,10 +38,16 @@ module.exports.run = async (bot, message, args, database) => {
                 else channel = true;
                 break;
             }
+            case "role": {
+                if(message.mentions.roles.size < 1) wrongTypeOfValue = true;
+                else role = true;
+                break;
+            }
         }
 
         if(wrongTypeOfValue) return response(message, ":x: Podano nieprawidłowy typ wartości! Jeżeli nie wiesz, jaki typ wartości jest dozwolony w tym ustawieniu, wpisz **/help configs**.");
         if(channel) args[1] = message.mentions.channels.first().id;
+        if(role) args[1] = message.mentions.roles.first().id;
 
         database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
             let config = decode1(rows1[0].config);

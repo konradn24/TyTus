@@ -18,13 +18,17 @@ module.exports.run = async (bot, message, args, database) => {
 
     response(message, loading);
 
-    database.query(`SELECT * FROM config WHERE id = 3`, (errC, rowsC) => {
+    database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (errC, rowsC) => {
         if(errC) {
             console.log(errC);
             return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (config). Spróbuj ponownie później.");
         }
 
-        if(rowsC[0].value === "false") return response(message, ":x: Nie możesz użyć tej komendy, ponieważ poziomy za aktywność są wyłączone. Jeżeli chcesz je włączyć, wprowadź **/config activityLevels true**.");
+        if(rowsC.length < 1) return response(message, ":x: Nie możesz użyć tej komendy, ponieważ poziomy za aktywność są wyłączone. Jeżeli chcesz je włączyć, wprowadź **/config activityLevels true**.");
+        
+        let config = decode1(rowsC[0].config);
+
+        if(config[2] === "false") return response(message, ":x: Nie możesz użyć tej komendy, ponieważ poziomy za aktywność są wyłączone. Jeżeli chcesz je włączyć, wprowadź **/config activityLevels true**.");
 
         database.query(`SELECT * FROM members WHERE discordID = "${member.user.id}"`, (err, rows) => {
             if(err) {
@@ -33,39 +37,66 @@ module.exports.run = async (bot, message, args, database) => {
             }
 
             if(rows.length < 1) return response(message, ":x: Nie można zredukować poziomu tego użytkownika, gdyż ma on poziom **1**.");
-            else if(rows[0].level < 2) return response(message, ":x: Nie można zredukować poziomu tego użytkownika, gdyż ma on poziom **1**.");
-            else if(toReduce > rows[0].level - 1) return response(message, `:x: Podałeś zbyt dużą wartość. Po zmianie poziom użytkownika wyniósłby 0 lub liczbę poniżej 0. Jego obecny poziom wynosi **${rows[0].level}**, więc możesz go zmniejszyć maksymalnie o **${rows[0].level - 1}**.`);
 
-            var lastLevel = rows[0].level;
-            var lastTotalXp = rows[0].totalXp;
+            var xpOnServersText = rows[0].xp;
+            var totalXpOnServersText = rows[0].totalXp;
+            var levelOnServersText = rows[0].level;
+            let xpOnServers = decode1(xpOnServersText);
+            let totalXpOnServers = decode1(totalXpOnServersText);
+            let levelOnServers = decode1(levelOnServersText);
 
-            database.query(`UPDATE members SET level = ${rows[0].level - toReduce} WHERE discordID = "${member.user.id}"`, (err1, rows1) => {
-                if(err1) {
-                    console.log(err1);
-                    return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (2). Spróbuj ponownie później.");
+            var saved = false;
+            var xp = 0;
+            var totalXp = 0, lastTotalXp = 0;
+            var level = 1, lastLevel = 1;
+
+            xpOnServers.forEach(element => {
+                var elementID = decode2(element)[0];
+                var elementValue = decode2(element)[1];
+                if(message.guild.id === elementID) {
+                    saved = true;
+                    xp = parseInt(elementValue);
                 }
-
-                database.query(`UPDATE members SET xp = 0 WHERE discordID = "${member.user.id}"`, (err2, rows2) => {
-                    if(err2) {
-                        console.log(err2);
-                        return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (3). Spróbuj ponownie później.");
-                    }
-
-                    var totalXp = 0;
-                    for(var i = lastLevel - toReduce; i < lastLevel; i++) {
-                        totalXp += i * 50;
-                    }
-
-                    database.query(`UPDATE members SET totalXp = ${lastTotalXp - totalXp} WHERE discordID = "${member.user.id}"`, (err3, rows3) => {
-                        if(err3) {
-                            console.log(err3);
-                            return response(message, ":x: Wystąpił błąd podczas łączenia się z bazą danych (4). Spróbuj ponownie później.");
-                        }
-
-                        response(message, `:white_check_mark: Odjęto **${toReduce}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${lastLevel - toReduce}.`);
-                    });
-                });
             });
+
+            totalXpOnServers.forEach(element => {
+                var elementID = decode2(element)[0];
+                var elementValue = decode2(element)[1];
+                if(message.guild.id === elementID) {
+                    saved = true;
+                    totalXp = parseInt(elementValue);
+                    lastTotalXp = parseInt(elementValue);
+                }
+            });
+
+            levelOnServers.forEach(element => {
+                var elementID = decode2(element)[0];
+                var elementValue = decode2(element)[1];
+                if(message.guild.id === elementID) {
+                    saved = true;
+                    level = parseInt(elementValue);
+                    lastLevel = parseInt(elementValue);
+                }
+            });
+
+            if(level < 2) return response(message, ":x: Nie można zredukować poziomu tego użytkownika, gdyż ma on poziom **1**.");
+            if(toReduce > level - 1) return response(message, `:x: Podałeś zbyt dużą wartość. Po zmianie poziom użytkownika wyniósłby 0 lub liczbę poniżej 0. Jego obecny poziom wynosi **${level}**, więc możesz go zmniejszyć maksymalnie o **${level - 1}**.`);
+            if(!saved) return response(message, ":x: Nie można zredukować poziomu tego użytkownika, gdyż ma on poziom **1**.");
+
+            totalXp = 0;
+            for(var i = lastLevel - toReduce; i < lastLevel; i++) {
+                totalXp += i * 50;
+            }
+
+            xpOnServersText = xpOnServersText.replace(`${message.guild.id}:${xp}`, `${message.guild.id}:0`);
+            levelOnServersText = levelOnServersText.replace(`${message.guild.id}:${lastLevel}`, `${message.guild.id}:${lastLevel - toReduce}`);
+            totalXpOnServersText = totalXpOnServersText.replace(`${message.guild.id}:${lastTotalXp}`, `${message.guild.id}:${lastTotalXp - totalXp}`);
+
+            database.query(`UPDATE members SET xp = "${xpOnServersText}" WHERE discordID = "${member.user.id}"`);
+            database.query(`UPDATE members SET level = "${levelOnServersText}" WHERE discordID = "${member.user.id}"`);
+            database.query(`UPDATE members SET totalXp = "${totalXpOnServersText}" WHERE discordID = "${member.user.id}"`);
+
+            response(message, `:white_check_mark: Odjęto **${toReduce}** poziomów użytkownikowi **${member.user.username}**. Jego aktualny poziom wynosi ${lastLevel - toReduce}.`);
         });
     });
 }
@@ -79,4 +110,22 @@ module.exports.config = {
 
 function response(message, response) {
     message.channel.send(response);
+}
+
+function decode1(text) {
+    let fields = text.split("/NF");
+
+    return fields;
+}
+
+function decode2(field) {
+    let parts = field.split(":");
+
+    return parts;
+}
+
+function decode3(part) {
+    let details = part.split(",");
+
+    return details;
 }

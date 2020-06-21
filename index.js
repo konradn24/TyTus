@@ -18,7 +18,7 @@ const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
 const database = mysql.createConnection({
-    host: 'db4free.net',
+    host: '85.10.205.173',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
@@ -38,21 +38,43 @@ bot.on('ready', async () => {
     console.log("Jestem aktywny!");
     bot.user.setActivity(`v${package.version} | /help`, {type: "WATCHING"});
 
+    var alreadyFetched = new Array();
+
     //Fetching tasks messages
-    bot.guilds.find('id', guildID).channels.find('id', tasksChannelID).fetchMessages();
+    database.query(`SELECT * FROM tasks`, (err, rows) => {
+        if(err) return console.log(err);
+
+        if(rows.length < 1) return;
+
+        for(var i = 0; i < rows.length; i++) {
+            var channelID = rows[i].channel;
+
+            if(!alreadyFetched.includes(channelID)) {
+                bot.channels.find('id', channelID).fetchMessages();
+                alreadyFetched.push(channelID);
+            }
+        }
+    });
 
     //Fetching reaction roles messages
-    // database.query(`SELECT * FROM reaction_roles`, (err, rows) => {
-    //     if(err) return console.log(err);
+    database.query(`SELECT * FROM reaction_roles`, (err, rows) => {
+        if(err) return console.log(err);
 
-    //     if(rows.length < 1) return;
+        if(rows.length < 1) return;
 
-    //     for(var i = 0; i < rows.length; i++) {
-    //         var channelID = rows[i].channelID;
+        for(var i = 0; i < rows.length; i++) {
+            var channelID = rows[i].channelID;
 
-    //         bot.channels.find('id', channelID).fetchMessages();
-    //     }
-    // });
+            if(!alreadyFetched.includes(channelID)) {
+                bot.channels.find('id', channelID).fetchMessages();
+                alreadyFetched.push(channelID);
+            }
+        }
+    });
+
+    alreadyFetched.forEach(element => {
+        alreadyFetched.pop();
+    });
 });
 
 const fs = require('fs');
@@ -73,10 +95,8 @@ fs.readdir('./commands/', (err, files) => {
     });
 });
 
-var interval = 0;
-
 bot.on('message', async message =>{
-    if(message.author.bot || message.channel.type === "dm" || message.author.id != "485062530629107746") return;
+    if(message.author.bot || message.channel.type === "dm") return;
 
     var dbGuild = bot.user.client.guilds.find("name", databaseServer);
     var dbChannel = dbGuild.channels.find("name", databaseChannel);
@@ -205,22 +225,12 @@ bot.on('message', async message =>{
 bot.on("messageReactionAdd", async (reaction, member) => {
     //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ TASKS SYSTEM ⋙⋙
 
-    if(reaction.message.channel.id === tasksChannelID && reaction.emoji.name === "👍") {
-        let msgContent1 = reaction.message.content.split(': ');
-        if(msgContent1.length > 2) {
-            for(var i = 2; i < msgContent1.length; i++) {
-                msgContent1[1] += ":" + msgContent1[i]; 
-            }
-        }
-
-        var msgContent2 = msgContent1[1].split(" |");
-        var msgContentFinal = msgContent2[0];
-
-        var index = reaction.message.content.substr(10, 2);
+    if((reaction.message.mentions.members.size > 0 || reaction.message.mentions.roles.size > 0) && reaction.message.author.id === bot.user.id && reaction.emoji.name === "👍") {
+        var index = parseInt(reaction.message.content.substr(1, 2));
         console.log(index);
 
         try {
-        database.query(`SELECT * FROM tasks WHERE id="${index}"`, (err, rows) => {
+        database.query(`SELECT * FROM tasks WHERE id=${index}`, (err, rows) => {
             if(err) {
                 return console.log("Database 1 error: " + err);
             }
@@ -228,17 +238,17 @@ bot.on("messageReactionAdd", async (reaction, member) => {
             var role = rows[0].role;
 
             //When server owner clicks reaction "👍"
-            if(member.id === "334361003498405889") { //TiTi98_pl's ID IMPORTANT
+            if(member.id === reaction.message.guild.owner.id) {
                 if(rows[0].made === "tak" || rows[0].made_by === "") return; //If it's currently accepted or nobody made it, then return
 
                 //Updating task content
                 var taskFor;
                 if(role === "false") { //When task was for one person
                     taskFor = reaction.message.mentions.members.first();
-                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text}\n**Wykonano!** :white_check_mark:`);
+                    reaction.message.edit(`(${rows[0].id}) **Zadanie dla ${taskFor}**: ${rows[0].text}\n**Wykonano!** :white_check_mark:`);
                 } else { //When task was for role
                     taskFor = reaction.message.mentions.roles.first();
-                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text}\n**Wykonano przez ${reaction.message.guild.members.find('id', rows[0].made_by).user.username}!** :white_check_mark:`);
+                    reaction.message.edit(`(${rows[0].id}) **Zadanie dla ${taskFor}**: ${rows[0].text}\n**Wykonano przez ${reaction.message.guild.members.find('id', rows[0].made_by).user.username}!** :white_check_mark:`);
                 }
 
                 //Updating task's "made" param in database
@@ -254,10 +264,27 @@ bot.on("messageReactionAdd", async (reaction, member) => {
                     }
 
                     //If any user with this ID does not exist, add him to database
-                    if(rows1.length < 1) return database.query(`INSERT INTO administration VALUES(NULL, "${madeBy.id}", ${rows[0].points})`);
+                    if(rows1.length < 1) return database.query(`INSERT INTO administration VALUES(NULL, "${madeBy.id}", "${reaction.message.guild.id}:${rows[0].points}/NF")`);
 
                     //if there is user with this ID, update "points" param
-                    database.query(`UPDATE administration SET points=${rows1[0].points + rows[0].points} WHERE discordID="${madeBy.id}"`, console.log);
+                    var pointsOnServersText = rows1[0].points;
+                    let pointsOnServers = decode1(pointsOnServersText);
+
+                    var points = -1;
+
+                    pointsOnServers.forEach(element => {
+                        if(element.startsWith(reaction.message.guild.id)) {
+                            points = parseInt(decode2(element)[1]);
+                        }
+                    });
+
+                    if(points === -1) {
+                        pointsOnServersText += `${reaction.message.guild.id}:${rows[0].points}/NF`;
+                    } else {
+                        pointsOnServersText = pointsOnServersText.replace(`${reaction.message.guild.id}:${points}`, `${reaction.message.guild.id}:${points + rows[0].points}`);
+                    }
+
+                    database.query(`UPDATE administration SET points="${pointsOnServersText}" WHERE discordID="${madeBy.id}"`, console.log);
                 });
             //When any other user clicks reaction
             } else {
@@ -271,14 +298,14 @@ bot.on("messageReactionAdd", async (reaction, member) => {
                 if(role === "false") { //When task is for one person
                     if(member.id != taskFor.id) return; //If person that clicked reaction don't have to make this task, then return
 
-                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text} |\n**Wykonano:** tak (niepotwierdzone :thinking:) |`);
+                    reaction.message.edit(`(${rows[0].id}) **Zadanie dla ${taskFor}**: ${rows[0].text}\n**Wykonano:** tak (niepotwierdzone :thinking:)`);
 
                     //Set task's param "made_by" to the ID of user that clicked reaction
                     database.query(`UPDATE tasks SET made_by="${taskFor.id}" WHERE id=${rows[0].id}`, console.log);
                 } else {
                     if(!reaction.message.guild.members.find('id', `${member.id}`).roles.find('id', taskFor.id)) return; //If this person doesn't have specified role, then return
                     
-                    reaction.message.edit(`**Zadanie ${rows[0].id} dla ${taskFor}**: ${rows[0].text} |\n**Wykonano przez:** ${member.username} (niepotwierdzone :thinking:) |`);
+                    reaction.message.edit(`(${rows[0].id}) **Zadanie dla ${taskFor}**: ${rows[0].text}\n**Wykonano przez:** ${member.username} (niepotwierdzone :thinking:)`);
                 
                     //Set task's param "made_by" to the ID of user that clicked reaction
                     database.query(`UPDATE tasks SET made_by="${member.id}" WHERE id=${rows[0].id}`, console.log);

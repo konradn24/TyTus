@@ -16,7 +16,9 @@ module.exports.run = async (bot, message, args, database) => {
             if(rows.length < 1) return message.channel.send(":x: Opcja o podanej nazwie nie istnieje! Jeżeli potrzebujesz pełnej listy dostępnych ustawień, zajrzyj tutaj: **/help configs**.");
 
             var isChannel = false;
+            var isRole = false;
             if(rows[0].allowedValues === "channel") isChannel = true;
+            if(rows[0].allowedValues === "role") isRole = true;
 
             database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
                 if(err1) {
@@ -31,7 +33,17 @@ module.exports.run = async (bot, message, args, database) => {
 
                 if(isChannel) {
                     var channel = message.guild.channels.find('id', config[configID]);
-                    return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${channel}*`)
+                    return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${channel}*`);
+                }
+
+                if(isRole) {
+                    var role = message.guild.roles.find('id', config[configID]);
+                    return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${role}*`);
+                }
+
+                if(config[configID] === "N") {
+                    var notSet = "nie ustawiono";
+                    return response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${notSet}*`)
                 }
 
                 response(message, `:white_check_mark: Opcja *${args[0]}* jest obecnie ustawiona na: *${config[configID]}*`);

@@ -14,7 +14,7 @@ module.exports.run = async (bot, message, args, database) => {
     //     .setFooter("TyTus Bot", bot.user.displayAvatarURL);
     //     message.channel.send({embed: bEmbed});
 
-    var text = `\`\`\`python\nNazwa: TyTus Bot\nWłaściciel: konradn24#3218\nPrzeznaczony dla: TiTi98_pl\nWersja: ${package.version}\`\`\``;
+    var text = `\`\`\`python\nNazwa: TyTus Bot\nWłaściciel: konradn24#3218\nSerwer: ${message.guild.name}\nWersja: ${package.version}\`\`\``;
     message.channel.send(text);
 }
 
@@ -22,5 +22,5 @@ module.exports.config = {
     name: "botinfo",
     aliases: ["about", "bot"],
     description: "Zawiera najważniejsze informacje o programie.",
-    bigDesc: "Zawiera najważniejsze informacje o programie: oficjalną nazwę bota, właściciela i władcy świata (serwera). Komenda dodana w wersji 0.1."
+    bigDesc: "Zawiera najważniejsze informacje o programie, m.in.: oficjalną nazwę bota, właściciela i wersję."
 }

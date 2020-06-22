@@ -56,6 +56,9 @@ module.exports.run = async (bot, message, args, database) => {
             }
 
             var text = `\`ADMINISTRATORZY - RANKING\``;
+
+            if(leaderboard.length < 1) text += `\nBrak informacji do wyświetlenia!\nPrawdopodobnie wszyscy administratorzy mają 0 punktów.\n**/addTask <@rola/@user> <termin (dni)> <ilość punktów (NIEWYMAGANE)> <treść>** - zadaj zadanie dla administracji\n**/addPoints <@user> <ilość>** - dodaj komuś punkty`;
+
             for(var i = 0; i < leaderboard.length; i++) {
                 var username = message.guild.members.find('id', decode2(leaderboard[i])[0]).user.username;
                 text += `\n **#${i + 1}** *${username}* | Punkty: **${decode2(leaderboard[i])[1]}**`;

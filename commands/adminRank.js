@@ -12,11 +12,11 @@ module.exports.run = async (bot, message, args, database) => {
 
         var adminRole;
 
-        if(rowsC.length < 1) return response("Nie określono roli zarządu serwera! Jeżeli chcesz to zmienić, wprowadź **/config adminRole <@rola>**.");
+        if(rowsC.length < 1) return response(message, "Nie określono roli zarządu serwera! Jeżeli chcesz to zmienić, wprowadź **/config adminRole <@rola>**.");
 
         let config = decode1(rowsC[0].config);
         adminRole = config[10];
-        if(adminRole === "N") return response("Nie określono roli zarządu serwera! Jeżeli chcesz to zmienić, wprowadź **/config adminRole <@rola>**.");
+        if(adminRole === "N") return response(message, "Nie określono roli zarządu serwera! Jeżeli chcesz to zmienić, wprowadź **/config adminRole <@rola>**.");
 
         let hasRole = message.member.roles.find('id', adminRole);
         if(!hasRole) return response(message, "To polecenie jest dostępne tylko i wyłącznie dla administracji serwera! Jeżeli należysz do zarządu tego serwera, sprawdź poprawność ustawienia \"adminRole\" poleceniem **/showConfig adminRole**.");

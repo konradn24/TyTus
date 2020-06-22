@@ -114,7 +114,7 @@ bot.on('message', async message =>{
 
             if(rows.length < 1) return console.log("Adding server to database (when tried to add XP) failed! rows.length < 1");
 
-            database.query(`INSERT INTO servers VALUES(NULL, "${message.guild.id}", "${rows[0].value}/NF${rows[1].value}/NF${rows[2].value}/NF${rows[3].value}/NF${rows[4].value}/NF${rows[5].value}/NF${rows[6].value}/NF${rows[7].value}/NF${rows[8].value}")`, () => {lgChannel.send(`Added server ${message.guild.name} to database!`);});
+            database.query(`INSERT INTO servers VALUES(NULL, "${message.guild.id}", "${rows[0].value}/NF${rows[1].value}/NF${rows[2].value}/NF${rows[3].value}/NF${rows[4].value}/NF${rows[5].value}/NF${rows[6].value}/NF${rows[7].value}/NF${rows[8].value}/NF${rows[9].value}/NF${rows[10].value}")`, () => {lgChannel.send(`Added server ${message.guild.name} to database!`);});
         });
 
         let configs = decode1(rowsC[0].config);

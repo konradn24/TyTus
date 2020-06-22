@@ -1,7 +1,7 @@
 {
   "name": "TyTus",
   "version": "1.0.0",
-  "description": "Bot przeznaczony na serwer TiTi98_pl",
+  "description": "Masz dużo botów na serwerze? Każdy jeden bot od statystyk, poziomów, słuchania muzyki? Zmień to! TyTus jest wielofunkcyjnym botem pozwalającym wprowadzić porządek na Twoim serwerze poprzez zastąpienie kilku innych: kilka botów w jednym! Domyślny prefiks: /",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

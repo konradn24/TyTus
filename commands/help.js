@@ -9,6 +9,7 @@ module.exports.run = async (bot, message, args, database) => {
                 var embed = new Discord.RichEmbed()
                 .setTitle("TyTus - wszystkie dostępne ustawienia")
                 .setDescription("**/showConfig <nazwaUstawienia>**, żeby wyświetlić aktualną wartość dla danego ustawienia. \n **/config <nazwaUstawienia> <wartosc>**, żeby zmienić wybrane ustawienie. \n \n")
+                .addField("**LISTA USTAWIEŃ KONFIGURACYJNYCH (CONFIG)**", "⚊⚊⚊", false)
                 .setFooter("Discord TyTus Bot © 2020");
                 for(var i = 0; i < rows.length; i++) {
                     var values;
@@ -39,7 +40,7 @@ module.exports.run = async (bot, message, args, database) => {
                         }
                     }
                     // text += `\`${rows[i].name}\` - ${rows[i].description} Dopuszczalne wartości: *${values}*.\n\n`;
-                    embed.addField(rows[i].name, `${rows[i].description} Dopuszczalne wartości: *${values}*`, false);
+                    embed.addField(rows[i].name, `${rows[i].description} Dopuszczalne wartości: *${values}*`, true);
                 }
 
                 message.channel.send(embed);

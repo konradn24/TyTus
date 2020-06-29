@@ -6,7 +6,10 @@ module.exports.run = async (bot, message, args, database) => {
         if(args[0] === "configs") {
             database.query(`SELECT * FROM config`, (err, rows) => {
                 if(err) return console.log(err);
-                var text = "**/showConfig <nazwaUstawienia>**, żeby wyświetlić aktualną wartość dla danego ustawienia. \n **/config <nazwaUstawienia> <wartosc>**, żeby zmienić wybrane ustawienie. \n \n";
+                var embed = new Discord.RichEmbed()
+                .setTitle("TyTus - wszystkie dostępne ustawienia")
+                .setDescription("**/showConfig <nazwaUstawienia>**, żeby wyświetlić aktualną wartość dla danego ustawienia. \n **/config <nazwaUstawienia> <wartosc>**, żeby zmienić wybrane ustawienie. \n \n")
+                .setFooter("Discord TyTus Bot © 2020");
                 for(var i = 0; i < rows.length; i++) {
                     var values;
                     switch(rows[i].allowedValues) {
@@ -35,10 +38,11 @@ module.exports.run = async (bot, message, args, database) => {
                             break;
                         }
                     }
-                    text += `\`${rows[i].name}\` - ${rows[i].description} Dopuszczalne wartości: *${values}*.\n\n`;
+                    // text += `\`${rows[i].name}\` - ${rows[i].description} Dopuszczalne wartości: *${values}*.\n\n`;
+                    embed.addField(rows[i].name, `${rows[i].description} Dopuszczalne wartości: *${values}*`, false);
                 }
 
-                message.channel.send(text);
+                message.channel.send(embed);
             });
         }
 

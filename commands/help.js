@@ -9,7 +9,6 @@ module.exports.run = async (bot, message, args, database) => {
                 var embed = new Discord.RichEmbed()
                 .setTitle("TyTus - wszystkie dostępne ustawienia")
                 .setDescription("**/showConfig <nazwaUstawienia>**, żeby wyświetlić aktualną wartość dla danego ustawienia. \n **/config <nazwaUstawienia> <wartosc>**, żeby zmienić wybrane ustawienie. \n \n")
-                .addField("**LISTA USTAWIEŃ KONFIGURACYJNYCH (CONFIG)**", "⚊⚊⚊", false)
                 .setFooter("Discord TyTus Bot © 2020");
                 for(var i = 0; i < rows.length; i++) {
                     var values;
@@ -30,6 +29,10 @@ module.exports.run = async (bot, message, args, database) => {
                             values = "rola";
                             break;
                         }
+                        case "channelname": {
+                            values = "nazwa kanału";
+                            break;
+                        }
                         case "ALL": {
                             values = "wszystko (tekst, liczby)";
                             break;
@@ -43,8 +46,26 @@ module.exports.run = async (bot, message, args, database) => {
                     embed.addField(rows[i].name, `${rows[i].description} Dopuszczalne wartości: *${values}*`, true);
                 }
 
-                message.channel.send(embed);
+                return message.channel.send(embed);
             });
+        }
+
+        if(args[0] === "stats") {
+            var embed = new Discord.RichEmbed()
+            .setTitle("TyTus - statystyki serwera Discord")
+            .setDescription("**/createStats** - automatycznie tworzy kanały dla statystyk\n**/config <statystyka (lista poniżej)> <nazwa kanału>** - przypisuje kanał do podanej statystyki\n**/statsInfo** - wyświetla listę aktualnie używanych na serwerze statystyk i ich kanały oraz statystyki, które są gotowe do użycia\n\n")
+            .addField("stats-members", "Ilość użytkowników na serwerze", false)
+            .addField("stats-new", "Nowy użytkownik (ten który ostatnio dołączył)", false)
+            .addField("stats-online (WKRÓTCE)", "Ilość członków online", false)
+            .addField("stats-bestonline (WKRÓTCE)", "Rekord aktywnych osób w tym samym momencie", false)
+            .addField("stats-date", "Aktualna data (DD.MM.YYYY, np. 19.05.2020)", false)
+            .addField("stats-time", "Godzina (HH:MM, np. 21:37)", false)
+            .addField("stats-role", "Ilość osób posiadających daną rolę (np. ile osób jest w zarządzie, czyli ma rolę @Zarząd)", false)
+            .addField("stats-bots", "Ilość botów na serwerze", false)
+            .addField("stats-humans", "Ilość członków serwera wyłączając boty", false)
+            .setFooter("Discord TyTus Bot © 2020");
+
+            return message.channel.send(embed);
         }
 
         let command = args[0];
@@ -63,7 +84,7 @@ module.exports.run = async (bot, message, args, database) => {
         var embed = new Discord.RichEmbed()
         .setColor(colors.red_light)
         .setTitle("TyTus - na ratunek")
-        .setDescription("Wprowadź */help <komenda>*, żeby więcej się o niej dowiedzieć. Mój prefiks: **/**\n\n")
+        .setDescription("Wprowadź */help <komenda>*, żeby więcej się o niej dowiedzieć. Mój prefiks: **/**\n**/help configs** - pokazuje nazwy ustawień konfiguracyjnych serwera\n**/help stats** - pokazuje informacje o statystykach\n\n")
         .addField("**MODERACJA**", "⚊⚊⚊", false) //MODERACJA
         .addField("ban", "Banuje określonego użytkownika", true)
         .addField("mute", "Wycisza członka serwera poprzez nadanie mu roli określonej w */config muteRole <@muted>*", true)

@@ -3,6 +3,7 @@ const colors = require('../colors.json');
 
 module.exports.run = async (bot, message, args, database) => {
     if(!message.member.hasPermission("MANAGE_ROLES")) return message.channel.send("Nie masz uprawnień do użycia tej komendy (MANAGE_ROLES)!");
+    if(!message.guild.me.hasPermission("MANAGE_ROLES")) return message.channel.send("Nie mam uprawnień potrzebnych do wyciszenia użytkownika! (MANAGE_ROLES)");
 
     let mute = message.mentions.members.first() || message.guild.members.get(args[0]);
     if(!mute) return message.channel.send("Określ którego użytkownika chcesz wyciszyć (przykładowe użycie komendy: **/mute @konradn24 <opcjonalnyPowód>**).");

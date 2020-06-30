@@ -17,12 +17,16 @@ const guildID = "553913839108882432"; //IMPORTANT
 const databaseServer = "TyTus Bot Database"; //IMPORTANT
 const databaseChannel = "experience-database"; //IMPORTANT
 const logsChannel = "logs"; //IMPORTANT
+const updatesChannel = "updates";
 const database = mysql.createConnection({
     host: '85.10.205.173',
     user: 'tytus_dev',
     password: 'tytusadmin',
     database: 'tytus_bot_db'
 });
+
+var logs = null;
+var updates = null;
 
 database.connect((err, connection) => {
     if(err) {
@@ -101,6 +105,9 @@ bot.on('message', async message =>{
     var dbGuild = bot.user.client.guilds.find("name", databaseServer);
     var dbChannel = dbGuild.channels.find("name", databaseChannel);
     var lgChannel = dbGuild.channels.find("name", logsChannel);
+    var updChannel = dbGuild.channels.find("name", updatesChannel);
+    if(logs === null) logs = lgChannel;
+    if(updates === null) updates = updChannel;
     if(!dbGuild) return console.log("Can't get to database server!");
     if(!dbChannel) return console.log("Can't get to database channel!");
 
@@ -200,25 +207,25 @@ bot.on('message', async message =>{
         let commandFile = bot.commands.get(cmd.slice(prefix.length)) || bot.commands.get(bot.aliases.get(cmd.slice(prefix.lenght)))
         if(commandFile) commandFile.run(bot, message, args, database);
 
-        if(cmd.slice(prefix.length) === "SQL_initTable") {
-            var date = new Date();
+        // if(cmd.slice(prefix.length) === "SQL_initTable") {
+        //     var date = new Date();
 
-            if(message.author.id != "485062530629107746") {
-                lgChannel.send(`User **${message.author.username}** tried to use **sqlInitTable** command on server **${message.guild.name}** at **${date}** (database table **members** __wasn't__ initiated).`);
-                return message.channel.send(":x: Nie możesz użyć tej funkcji.");
-            }
+        //     if(message.author.id != "485062530629107746") {
+        //         lgChannel.send(`User **${message.author.username}** tried to use **sqlInitTable** command on server **${message.guild.name}** at **${date}** (database table **members** __wasn't__ initiated).`);
+        //         return message.channel.send(":x: Nie możesz użyć tej funkcji.");
+        //     }
 
-            message.channel.send(":white_check_mark: Ok!");
-            for(var i = 0; i < message.guild.memberCount; i++) {
-                let sql = `INSERT INTO members VALUES(NULL, "${message.guild.members.array()[i].user.id}", "${message.guild.members.array()[i].user.username}", 0, 1)`;
-                let query = database.query(sql, (err, result) => {
-                    if(err) console.log(err);
-                    console.log(result);
-                });
-            }
+        //     message.channel.send(":white_check_mark: Ok!");
+        //     for(var i = 0; i < message.guild.memberCount; i++) {
+        //         let sql = `INSERT INTO members VALUES(NULL, "${message.guild.members.array()[i].user.id}", "${message.guild.members.array()[i].user.username}", 0, 1)`;
+        //         let query = database.query(sql, (err, result) => {
+        //             if(err) console.log(err);
+        //             console.log(result);
+        //         });
+        //     }
 
-            lgChannel.send(`User **${message.author.username}** used **SQL_initTable** command on server **${message.guild.name}** at **${date}** (database table **members** was __successfully__ initiated).`);
-        }
+        //     lgChannel.send(`User **${message.author.username}** used **SQL_initTable** command on server **${message.guild.name}** at **${date}** (database table **members** was __successfully__ initiated).`);
+        // }
     }
 });
 
@@ -392,6 +399,8 @@ bot.on('messageReactionRemove', async (reaction, member) => {
 
 bot.on('guildMemberAdd', member => {
     sendWelcomeText(member);
+
+    updatestats_lastmember();
 });
 
 bot.on('guildMemberRemove', member => {
@@ -458,45 +467,74 @@ function sendByeText(member) {
     });
 }
 
-// setTimeout(async function() {
-//     database.query(`SELECT * FROM administration`, (err, rows) => {
-//         if(err) return console.log(err);
+//SERVERS' STATS UPDATING
+setInterval(() => {
+    var madeUpdates = 0;
 
-//         if(rows.length < 1) return console.log("Updating administration table failed! rows.length = 0");
+    var startAt = Date.now();
+    var endAt = 0;
+    var time = 0;
 
-//         for(var i = 0; i < rows.length; i++) {
-//             var member = bot.guilds.find('id', guildID).members.find('id', rows[i].discordID);
-//             var removed = false;
-//             if(member === null) {
-//                 removed = true;
-//                 console.log(`Removing ${member.user.username} from administration table...`);
-//                 database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
-//             }
+    madeUpdates += updatestats_members();
 
-//             var haveRole = member.roles.find('id', "713994009944522863");
-//             if(haveRole === null && !removed) {
-//                 console.log(`Removing ${member.user.username} from administration table...`);
-//                 database.query(`DELETE FROM administration WHERE discordID="${rows[i].discordID}"`, console.log);
-//             }
-//         }
+    endAt = Date.now();
+    time = endAt - startAt;
 
-//         bot.guilds.find('id', guildID).members.forEach(member => {
-//             var haveRole = member.roles.find('id', "713994009944522863");
+    var date = new Date();
 
-//             if(haveRole != null) {
-//                 var inTable = false;
-//                 for(var j = 0; j < rows.length; j++) {
-//                     if(rows[j].discordID === member.id) inTable = true;
-//                 }
+    if(updates != null) updates.send(`Updated statistics on all servers. Updates: **${madeUpdates}**. Time taken (in millis): **${time}**. Sent at: ${date}`);
+}, 60000);
 
-//                 if(!inTable) {
-//                     console.log(`Adding ${member.user.username} to administration table...`);
-//                     database.query(`INSERT INTO administration VALUES(NULL, "${member.id}", 0)`, console.log());
-//                 }
-//             }
-//         });
-//     });
-// }, 600000);
+//CALLED IN SETINTERVAL()
+function updatestats_members() {
+    var madeUpdates = 0;
+
+    database.query(`SELECT * FROM servers`, (err, rows) => {
+        if(err) return console.log(err);
+        
+        if(rows.length < 1) return console.log("updatestats_members() function error: rows.length < 1");
+
+        bot.guilds.forEach(guild => {
+            rows.forEach(row => {
+                if(guild.id === row.discordID) {
+                    let config = decode1(row.config);
+
+                    if(config[11] != "N") {
+                        if(guild.channels.find('id', config[11])) {
+                            guild.channels.find('id', config[11]).setName(`Członkowie: ${guild.memberCount}`);
+                            madeUpdates++;
+                        }
+                    }
+                }
+            });
+        });
+    });
+
+    return madeUpdates;
+}
+
+//CALLED IN BOT.ON('guildMemberAdd')
+function updatestats_lastmember(nickname) {
+    database.query(`SELECT * FROM servers`, (err, rows) => {
+        if(err) return console.log(err);
+        
+        if(rows.length < 1) return console.log("updatestats_lastmember(nickname) function error: rows.length < 1");
+
+        bot.guilds.forEach(guild => {
+            rows.forEach(row => {
+                if(guild.id === row.discordID) {
+                    let config = decode1(row.config);
+
+                    if(config[12] != "N") {
+                        if(guild.channels.find('id', config[12])) {
+                            guild.channels.find('id', config[12]).setName(`Nowy: ${nickname}`);
+                        }
+                    }
+                }
+            });
+        });
+    });
+}
 
 bot.login('NjkxMjkxMTc2NDQ3Mzc3NDEx.Xr1WuA.vlnQ3folaLuRMoxoAhxJ1d29r3o');
 

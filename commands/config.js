@@ -23,6 +23,7 @@ module.exports.run = async (bot, message, args, database) => {
         var wrongTypeOfValue = false;
         var channel = false;
         var role = false;
+        var channelname = false;
         switch(rows[0].allowedValues) {
             case "number": {
                 var type = typeof args[1];
@@ -43,13 +44,24 @@ module.exports.run = async (bot, message, args, database) => {
                 else role = true;
                 break;
             }
+            case "channelname": {
+                channelname = true;
+                break;
+            }
         }
 
         if(wrongTypeOfValue) return response(message, ":x: Podano nieprawidłowy typ wartości! Jeżeli nie wiesz, jaki typ wartości jest dozwolony w tym ustawieniu, wpisz **/help configs**.");
         if(channel) args[1] = message.mentions.channels.first().id;
         if(role) args[1] = message.mentions.roles.first().id;
+        if(!message.guild.channels.find('name', args[1])) return response(message, ":x: Kanał o podanej nazwie nie istnieje! Aby mieć pewność, że wprowadzana nazwa się zgadza, **kliknij PPM na kanał -> edytuj kanał -> przegląd** i skopiuj nazwę.");
+        if(channelname) args[1] = message.guild.channels.find('name', args[1]).id;
 
         database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {
+            if(err1) {
+                console.log(err1);
+                return message.channel.send(":x: Wystąpił błąd podczas łączenia się z bazą danych! (servers) Spróbuj ponownie później.");
+            }
+
             let config = decode1(rows1[0].config);
             var configID = rows[0].id - 1;
             var thisConfig = config[configID];

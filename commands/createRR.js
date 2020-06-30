@@ -168,5 +168,5 @@ module.exports.config = {
     name: "createRR",
     aliases: ["newRR", "addRR", "rr"],
     description: "Tworzy nową wiadomość typu reaction roles. Dostępne tylko dla administratorów!",
-    bigDesc: "Tworzy nową wiadomość typu reaction roles. Dostępne tylko dla administratorów! Użycie komendy: **/createRR <kanal> <ileRól> <tresc>**"
+    bigDesc: "Tworzy nową wiadomość typu reaction roles. Dostępne tylko dla administratorów! Użycie komendy: **/createRR <kanal> <tresc>**"
 }

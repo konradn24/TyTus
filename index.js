@@ -400,11 +400,14 @@ bot.on('messageReactionRemove', async (reaction, member) => {
 bot.on('guildMemberAdd', member => {
     sendWelcomeText(member);
 
+    updatestats_members();
     updatestats_lastmember();
 });
 
 bot.on('guildMemberRemove', member => {
     sendByeText(member);
+    
+    updatestats_members();
 });
 
 function sendWelcomeText(member) {
@@ -475,8 +478,6 @@ setInterval(() => {
     var endAt = 0;
     var time = 0;
 
-    madeUpdates += updatestats_members();
-
     endAt = Date.now();
     time = endAt - startAt;
 
@@ -498,7 +499,9 @@ function updatestats_members() {
             rows.forEach(row => {
                 if(guild.id === row.discordID) {
                     let config = decode1(row.config);
-
+                    
+                    if(config.length < 12) return;
+                    
                     if(config[11] != "N") {
                         if(guild.channels.find('id', config[11])) {
                             guild.channels.find('id', config[11]).setName(`Członkowie: ${guild.memberCount}`);
@@ -525,6 +528,8 @@ function updatestats_lastmember(nickname) {
                 if(guild.id === row.discordID) {
                     let config = decode1(row.config);
 
+                    if(config.length < 13) return;
+                    
                     if(config[12] != "N") {
                         if(guild.channels.find('id', config[12])) {
                             guild.channels.find('id', config[12]).setName(`Nowy: ${nickname}`);

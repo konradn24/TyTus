@@ -70,7 +70,7 @@ bot.on('ready', async () => {
             var channelID = rows[i].channelID;
 
             if(!alreadyFetched.includes(channelID)) {
-                if(bot.channels.find('id', channelID) == null) return;
+                if(bot.channels.find('id', channelID) == null) return console.log("Cannot fetch messages for channel: " + channelID);
                 bot.channels.find('id', channelID).fetchMessages();
                 alreadyFetched.push(channelID);
             }

@@ -342,6 +342,8 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
         //If the message isn't reaction roles msg or reacting user was bot, then return
         if(rows.length < 1 || member.id === bot.user.id) return;
+        
+        console.log("znaleziono rr");
 
         //Definitions of neccessary variables
         var roles = rows[0].roles;

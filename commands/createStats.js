@@ -177,7 +177,7 @@ module.exports.run = async (bot, message, args, database) => {
 
         changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
 
-        database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`);
+        database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, console.log);
     });
 }
 

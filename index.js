@@ -340,10 +340,10 @@ bot.on("messageReactionAdd", async (reaction, member) => {
     database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
         if(err) return console.log(err);
 
+        console.log("znaleziono rr");
+        
         //If the message isn't reaction roles msg or reacting user was bot, then return
         if(rows.length < 1 || member.id === bot.user.id) return;
-        
-        console.log("znaleziono rr");
 
         //Definitions of neccessary variables
         var roles = rows[0].roles;

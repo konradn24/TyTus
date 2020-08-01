@@ -53,7 +53,7 @@ module.exports.run = async (bot, message, args, database) => {
         if(wrongTypeOfValue) return response(message, ":x: Podano nieprawidłowy typ wartości! Jeżeli nie wiesz, jaki typ wartości jest dozwolony w tym ustawieniu, wpisz **/help configs**.");
         if(channel) args[1] = message.mentions.channels.first().id;
         if(role) args[1] = message.mentions.roles.first().id;
-        if(channelname && !message.guild.channels.find('name', args[1])) return response(message, ":x: Kanał o podanej nazwie nie istnieje! Aby mieć pewność, że wprowadzana nazwa się zgadza, **kliknij PPM na kanał -> edytuj kanał -> przegląd** i skopiuj nazwę.");
+        if(!message.guild.channels.find('name', args[1])) return response(message, ":x: Kanał o podanej nazwie nie istnieje! Aby mieć pewność, że wprowadzana nazwa się zgadza, **kliknij PPM na kanał -> edytuj kanał -> przegląd** i skopiuj nazwę.");
         if(channelname) args[1] = message.guild.channels.find('name', args[1]).id;
 
         database.query(`SELECT * FROM servers WHERE discordID = "${message.guild.id}"`, (err1, rows1) => {

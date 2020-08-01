@@ -68,13 +68,10 @@ bot.on('ready', async () => {
 
         for(var i = 0; i < rows.length; i++) {
             var channelID = rows[i].channelID;
-
-            if(bot.channels.find('id', channelID) != null) console.log("Tried to fetch index " + i + ". Guild: " + bot.channels.find('id', channelID).guild.name);
             
             if(!alreadyFetched.includes(channelID)) {
-                if(bot.channels.find('id', channelID) == null) { console.log("Cannot fetch messages for channel: " + channelID); continue; }
+                if(bot.channels.find('id', channelID) == null) { console.log("Cannot get channel: " + channelID); continue; }
                 bot.channels.find('id', channelID).fetchMessages();
-                console.log("Fetched messages for channel " + bot.channels.find('id', channelID).name + " in guild " + bot.channels.find('id', channelID).guild.name);
                 alreadyFetched.push(channelID);
             }
         }
@@ -242,7 +239,7 @@ bot.on('message', async message =>{
 
 bot.on("messageReactionAdd", async (reaction, member) => {
     //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ TASKS SYSTEM ⋙⋙
-    console.log("test 1");
+
     if((reaction.message.mentions.members.size > 0 || reaction.message.mentions.roles.size > 0) && reaction.message.author.id === bot.user.id && reaction.emoji.name === "👍") {
         var index = parseInt(reaction.message.content.substr(1, 2));
         console.log(index);
@@ -342,8 +339,6 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
     database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
         if(err) return console.log(err);
-
-        console.log("znaleziono rr");
         
         //If the message isn't reaction roles msg or reacting user was bot, then return
         if(rows.length < 1 || member.id === bot.user.id) return;

@@ -58,12 +58,12 @@ module.exports.run = async (bot, message, args, database) => {
 
                                 switch(stat) {
                                     case "members": {
-                                        config[11] == created.id;
+                                        config[11] = created.id;
                                         break;
                                     }
 
                                     case "new": {
-                                        config[12] == created.id;
+                                        config[12] = created.id;
                                         break;
                                     }
 

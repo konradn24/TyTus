@@ -69,7 +69,7 @@ bot.on('ready', async () => {
         for(var i = 0; i < rows.length; i++) {
             var channelID = rows[i].channelID;
 
-            console.log("Tried to fetch index " + i + ". Guild: " + bot.channels.find('id', channelID).guild.name);
+            if(bot.channels.find('id', channelID) != null) console.log("Tried to fetch index " + i + ". Guild: " + bot.channels.find('id', channelID).guild.name);
             
             if(!alreadyFetched.includes(channelID)) {
                 if(bot.channels.find('id', channelID) == null) return console.log("Cannot fetch messages for channel: " + channelID);

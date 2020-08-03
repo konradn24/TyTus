@@ -6,7 +6,7 @@ module.exports.run = async (bot, message, args, database) => {
 
     if(!args[0]) return message.channel.send(`:x: Podaj kanał, a następnie treść osadzonej (embed) wiadomości!`);
     else if(!args[1]) return message.channel.send(`:x: Podaj treść wiadomości!`);
-    else if(message.mentions.channels.size() < 1) return message.channel.send(`:x: Nie podano prawidłowego kanału! Przykład: **/embed #channel To jest osadzona wiadomość!**`);
+    else if(message.mentions.channels.size < 1) return message.channel.send(`:x: Nie podano prawidłowego kanału! Przykład: **/embed #channel To jest osadzona wiadomość!**`);
     
     var channel = message.mentions.channels.first();
     var text = args.slice(1).join(" ");

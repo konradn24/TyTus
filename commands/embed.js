@@ -15,10 +15,10 @@ module.exports.run = async (bot, message, args, database) => {
     .setColor(colors.gold)
     .setDescription(text);
 
-    var messageID = await channel.send(embed).id;
+    var messageID = await channel.send(embed);
     var channelID = channel.id;
     var guildID = message.guild.id;
-    await message.channel.send(`:white_check_mark: Gotowe! Kliknij w link, żeby zobaczyć wiadomość: https://discordapp.com/channels/${guildID}/${channelID}/${messageID}`);
+    await message.channel.send(`:white_check_mark: Gotowe! Kliknij w link, żeby zobaczyć wiadomość: https://discordapp.com/channels/${guildID}/${channelID}/`);
 }
 
 module.exports.config = {

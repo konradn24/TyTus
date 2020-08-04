@@ -80,6 +80,15 @@ module.exports.run = async (bot, message, args, database) => {
                                 errors++;
                             }
                         }
+
+                        var changedTextConfig = "";
+                        for(var i = 0; i < config.length; i++) {
+                            changedTextConfig += config[i] + "/NF";
+                        }
+
+                        changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
+
+                        database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, console.log);
                     } else {
                         return message.channel.send(":x: Anulowano!");
                     }
@@ -88,11 +97,15 @@ module.exports.run = async (bot, message, args, database) => {
         }
 
         if(args[0]) {
-            for(var i = 0; i < statsAmount; i++) {
+            for(var i = 0; i < args.length; i++) {
                 args.forEach(element => {
-                    if(element === toCreate[i].split("=")[0]) {
-                        statsAmount--;
-                        toCreate.splice(i, 1);
+                    if(element.split("-").length === 1) return message.channel.send(`:warning: Statystyka "${element}" nie istnieje! Jeżeli potrzebujesz pełnej listy wszystkich statystyk, wprowadź **/help stats**`);
+
+                    for(var j = 0; j < statsAmount; j++) {
+                        if(element.split("-")[1] === toCreate[j].split("=")[0]) {
+                            statsAmount--;
+                            toCreate.splice(j, 1);
+                        } else if(j === statsAmount - 1) return message.channel.send(`:warning: Statystyka "${element}" nie istnieje! Jeżeli potrzebujesz pełnej listy wszystkich statystyk, wprowadź **/help stats**`);
                     }
                 });
             }
@@ -141,12 +154,12 @@ module.exports.run = async (bot, message, args, database) => {
 
                                 switch(stat) {
                                     case "members": {
-                                        config[11] == created.id;
+                                        config[11] = created.id;
                                         break;
                                     }
 
                                     case "new": {
-                                        config[12] == created.id;
+                                        config[12] = created.id;
                                         break;
                                     }
 
@@ -163,21 +176,21 @@ module.exports.run = async (bot, message, args, database) => {
                                 errors++;
                             }
                         }
+
+                        var changedTextConfig = "";
+                        for(var i = 0; i < config.length; i++) {
+                            changedTextConfig += config[i] + "/NF";
+                        }
+
+                        changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
+
+                        database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, console.log);
                     } else {
                         return message.channel.send(":x: Anulowano!");
                     }
                 }
             });
         }
-
-        var changedTextConfig = "";
-        for(var i = 0; i < config.length; i++) {
-            changedTextConfig += config[i] + "/NF";
-        }
-
-        changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
-
-        database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, console.log);
     });
 }
 
@@ -185,7 +198,7 @@ module.exports.config = {
     name: "createStats",
     aliases: ["cs", "allStats"],
     description: "Automatycznie tworzy nowe kanały ze statystykami.",
-    bigDesc: "Automatycznie tworzy nowe kanały ze statystykami (uprawnienia trzeba ustawić ręcznie). Można dodatkowo podać, których statystyk bot ma nie tworzyć (np. **/createStats members clock date**, kolejność nie ma znaczenia). Aby uzyskać listę dostępnych statystyk wprowadź **/help stats**."
+    bigDesc: "Automatycznie tworzy nowe kanały ze statystykami (uprawnienia trzeba ustawić ręcznie). Można dodatkowo podać, których statystyk bot ma NIE tworzyć (np. **/createStats stats-members stats-clock stats-date**, kolejność nie ma znaczenia). Aby uzyskać listę dostępnych statystyk wprowadź **/help stats**."
 }
 
 function response(message, response) {

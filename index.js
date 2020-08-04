@@ -53,6 +53,11 @@ bot.on('ready', async () => {
         for(var i = 0; i < rows.length; i++) {
             var channelID = rows[i].channel;
 
+            if(bot.channels.find('id', channelID) === null) {
+                alreadyFetched.push(channelID);
+                continue;
+            }
+
             if(!alreadyFetched.includes(channelID)) {
                 bot.channels.find('id', channelID).fetchMessages();
                 alreadyFetched.push(channelID);
@@ -68,9 +73,13 @@ bot.on('ready', async () => {
 
         for(var i = 0; i < rows.length; i++) {
             var channelID = rows[i].channelID;
-            
+
+            if(bot.channels.find('id', channelID) === null) {
+                alreadyFetched.push(channelID);
+                continue;
+            }
+
             if(!alreadyFetched.includes(channelID)) {
-                if(bot.channels.find('id', channelID) == null) { console.log("Cannot get channel: " + channelID); continue; }
                 bot.channels.find('id', channelID).fetchMessages();
                 alreadyFetched.push(channelID);
             }
@@ -339,7 +348,7 @@ bot.on("messageReactionAdd", async (reaction, member) => {
 
     database.query(`SELECT * FROM reaction_roles WHERE messageID="${reaction.message.id}" AND channelID="${reaction.message.channel.id}"`, (err, rows) => {
         if(err) return console.log(err);
-        
+
         //If the message isn't reaction roles msg or reacting user was bot, then return
         if(rows.length < 1 || member.id === bot.user.id) return;
 
@@ -370,10 +379,9 @@ bot.on("messageReactionAdd", async (reaction, member) => {
             }
         }
 
-        var roleToAdd = reaction.message.guild.roles.find('id', rolesArray[reactionIndex]);
         var verifySystemRoleToRemove = reaction.message.guild.roles.find('id', verifySystemRoleToRemoveID);
 
-        reaction.message.guild.members.find('id', member.id).addRole(roleToAdd);
+        reaction.message.guild.members.find('id', member.id).addRole(reaction.message.guild.roles.find('id', rolesArray[reactionIndex]));
         if(verifySystemRoleToRemoveID != "") reaction.message.guild.members.find('id', member.id).removeRole(verifySystemRoleToRemove);
     });
 });
@@ -405,17 +413,19 @@ bot.on('messageReactionRemove', async (reaction, member) => {
     });
 });
 
-bot.on('guildMemberAdd', member => {
+bot.on('guildMemberAdd', async member => {
+    //Send welcome message
     sendWelcomeText(member);
 
-    updatestats_members();
-    updatestats_lastmember();
+    //Update stats
+    updatestats_lastmember(member.guild, member.displayName);
+    updatestats_members(member.guild);
 });
 
-bot.on('guildMemberRemove', member => {
+bot.on('guildMemberRemove', async member => {
     sendByeText(member);
-    
-    updatestats_members();
+
+    updatestats_members(member.guild);
 });
 
 function sendWelcomeText(member) {
@@ -478,74 +488,58 @@ function sendByeText(member) {
     });
 }
 
-//SERVERS' STATS UPDATING
-setInterval(() => {
+async function updatestats_members(guild) {
     var madeUpdates = 0;
 
-    var startAt = Date.now();
-    var endAt = 0;
-    var time = 0;
+    var guildID = guild.id;
 
-    endAt = Date.now();
-    time = endAt - startAt;
-
-    var date = new Date();
-
-    if(updates != null) updates.send(`Updated statistics on all servers. Updates: **${madeUpdates}**. Time taken (in millis): **${time}**. Sent at: ${date}`);
-}, 60000);
-
-//CALLED IN SETINTERVAL()
-function updatestats_members() {
-    var madeUpdates = 0;
-
-    database.query(`SELECT * FROM servers`, (err, rows) => {
+    database.query(`SELECT * FROM servers WHERE discordID="${guildID}"`, (err, rows) => {
         if(err) return console.log(err);
         
-        if(rows.length < 1) return console.log("updatestats_members() function error: rows.length < 1");
+        if(rows.length < 1) return console.log("updatestats_members(guild) function error: rows.length < 1");
 
-        bot.guilds.forEach(guild => {
-            rows.forEach(row => {
-                if(guild.id === row.discordID) {
-                    let config = decode1(row.config);
-                    
-                    if(config.length < 12) return;
-                    
-                    if(config[11] != "N") {
-                        if(guild.channels.find('id', config[11])) {
-                            guild.channels.find('id', config[11]).setName(`Członkowie: ${guild.memberCount}`);
-                            madeUpdates++;
-                        }
-                    }
-                }
-            });
-        });
+        let config = decode1(rows[0].config);
+
+        var configID = 11;
+
+        if(config[configID] != "N") {
+            if(guild.channels.find('id', config[configID]) != null) {
+                var name = 13;
+                name = config[name];
+
+                name = name.replace("{}", guild.memberCount);
+
+                guild.channels.find('id', config[configID]).setName(name);
+                madeUpdates++;
+            }
+        }
     });
 
     return madeUpdates;
 }
 
-//CALLED IN BOT.ON('guildMemberAdd')
-function updatestats_lastmember(nickname) {
-    database.query(`SELECT * FROM servers`, (err, rows) => {
+function updatestats_lastmember(guild, nickname) {
+    var guildID = guild.id;
+
+    database.query(`SELECT * FROM servers WHERE discordID = ${guildID}`, (err, rows) => {
         if(err) return console.log(err);
         
         if(rows.length < 1) return console.log("updatestats_lastmember(nickname) function error: rows.length < 1");
 
-        bot.guilds.forEach(guild => {
-            rows.forEach(row => {
-                if(guild.id === row.discordID) {
-                    let config = decode1(row.config);
+        let config = decode1(rows[0].config);
 
-                    if(config.length < 13) return;
-                    
-                    if(config[12] != "N") {
-                        if(guild.channels.find('id', config[12])) {
-                            guild.channels.find('id', config[12]).setName(`Nowy: ${nickname}`);
-                        }
-                    }
-                }
-            });
-        });
+        if(config[12] != "N") {
+            if(guild.channels.find('id', config[12])) {
+                var name = 14;
+                name = config[name];
+
+                name = name.replace("{}", nickname);
+
+                console.log(config[12]);
+
+                guild.channels.find('id', config[12]).setName(name);
+            }
+        }
     });
 }
 

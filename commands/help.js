@@ -60,9 +60,9 @@ module.exports.run = async (bot, message, args, database) => {
             .addField("stats-bestonline (WKRÓTCE)", "Rekord aktywnych osób w tym samym momencie", false)
             .addField("stats-date", "Aktualna data (DD.MM.YYYY, np. 19.05.2020)", false)
             .addField("stats-time", "Godzina (HH:MM, np. 21:37)", false)
-            .addField("stats-role", "Ilość osób posiadających daną rolę (np. ile osób jest w zarządzie, czyli ma rolę @Zarząd)", false)
-            .addField("stats-bots", "Ilość botów na serwerze", false)
-            .addField("stats-humans", "Ilość członków serwera wyłączając boty", false)
+            .addField("stats-role", "Ilość osób posiadających daną rolę (np. ile osób jest w zarządzie, czyli ma rolę @Zarząd) (WKRÓTCE)", false)
+            .addField("stats-bots", "Ilość botów na serwerze (WKRÓTCE)", false)
+            .addField("stats-humans", "Ilość członków serwera wyłączając boty (WKRÓTCE)", false)
             .setFooter("Discord TyTus Bot © 2020");
 
             return message.channel.send(embed);
@@ -84,29 +84,12 @@ module.exports.run = async (bot, message, args, database) => {
         var embed = new Discord.RichEmbed()
         .setColor(colors.red_light)
         .setTitle("TyTus - na ratunek")
-        .setDescription("Wprowadź */help <komenda>*, żeby więcej się o niej dowiedzieć. Mój prefiks: **/**\n**/help configs** - pokazuje nazwy ustawień konfiguracyjnych serwera\n**/help stats** - pokazuje informacje o statystykach\n\n")
-        .addField("**MODERACJA**", "⚊⚊⚊", false) //MODERACJA
-        .addField("ban", "Banuje określonego użytkownika", true)
-        .addField("mute", "Wycisza członka serwera poprzez nadanie mu roli określonej w */config muteRole <@muted>*", true)
-        .addField("unmute", "Przywraca możliwość pisania", true)
-        .addField("**POZIOMY ZA AKTYWNOŚĆ**", "⚊⚊⚊", false) //POZIOMY ZA AKTYWNOŚĆ
-        .addField("level", "Wyświetla aktualny poziom i aktulną ilość doświadczenia", true)
-        .addField("addLevel", "Dodaje użytkownikowi określoną ilość poziomów", true)
-        .addField("reduceLevel", "Redukuje podaną ilość poziomów użytkownika", true)
-        .addField("leaderboard", "Wyświetla ranking 10 najaktywniejszych osób", true)
-        .addField("resetLevels", "Resetuje wszystkim członkom serwera doświadczenie i poziomy, nie da się tego cofnąć!", true)
-        .addField("**ADMINISTRACJA**", "⚊⚊⚊", false) //ADMINISTRACJA
-        .addField("addTask", "Daje zadanie dla administracji, a konkretnie dla wszystkich osób z podaną rolą lub dla jednej określonej osoby", true)
-        .addField("adminPoints", "Pokazuje uzbieraną ilość punktów za zadania", true)
-        .addField("addPoints", "Przyznaje administratorowi dodatkowe punkty", true)
-        .addField("reducePoints", "Usuwa administratorowi punkty za wykonane zadania", true)
-        .addField("adminRank", "Wyświetla ranking najlepszych administratorów", true)
-        .addField("**INNE**", "⚊⚊⚊", false) //INNE
-        .addField("createRR", "Tworzy wiadomość reaction roles", true)
-        .addField("config", "Zmienia ustawienia konfiguracyjne na serwerze", true)
-        .addField("showConfig", "Pokazuje na co aktualnie jest ustawiona podana opcja", true)
-        .addField("test", "Sprawdza stan bota, jeżeli odpowie - wszystko jest w porządku", true)
-        .addField("botinfo", "Pokazuje informacje o bocie TyTus", true)
+        .setDescription("Wprowadź */help <komenda>*, żeby więcej się o niej dowiedzieć. Mój prefiks: **/**\n**/help configs** - pokazuje nazwy ustawień konfiguracyjnych serwera\n**/help stats** - pokazuje spis dostępnych statystyk\n\n\n")
+        .addField("**MODERACJA\n⚊⚊⚊**", "ban - banuje określonego użytkownika\n\nmute - Wycisza członka serwera poprzez nadanie mu roli określonej w */config muteRole <@muted>*\n\nunmute - Przywraca możliwość pisania\n ", false) //MODERACJA
+        .addField("**POZIOMY ZA AKTYWNOŚĆ\n⚊⚊⚊**", "level - wyświetla aktualny poziom i aktulną ilość doświadczenia\n\naddLevel - dodaje użytkownikowi określoną ilość poziomów\n\nreduceLevel - redukuje podaną ilość poziomów użytkownika\n\nleaderboard - wyświetla ranking 10 najaktywniejszych osób\n\nresetLevels - resetuje wszystkim członkom serwera doświadczenie i poziomy, nie da się tego cofnąć!", false) //POZIOMY ZA AKTYWNOŚĆ
+        .addField("**ADMINISTRACJA\n⚊⚊⚊**", "addTask - daje zadanie dla administracji, czyli dla wszystkich osób z podaną rolą lub dla jednej konkretnej osoby\n\nadminPoints - pokazuje uzbieraną ilość punktów za zadania\n\naddPoints - przyznaje administratorowi dodatkowe punkty\n\nreducePoints - odejmuje administratorowi punkty\n\nadminRank - wyświetla ranking najlepszych administratorów", false) //ADMINISTRACJA
+        .addField("**STATYSTYKI SERWEROWE\n⚊⚊⚊**", "createStats - automatycznie tworzy kanały ze statystykami, można podać, których kanałów bot ma NIE tworzyć\n\nsetStats - przypisuje podaną statystykę do podanego kanału\n\nsetStatsChannelName - zmienia nazwę kanału (np. z 'członkowie: {}' na '{} osób jest na serwerze') do którego przypisana jest podana statystyka", false) //STATYSTYKI SERWEROWE
+        .addField("**INNE\n⚊⚊⚊**", "createRR - tworzy wiadomość reaction roles\n\nconfig - zmienia ustawienia konfiguracyjne na serwerze\n\nshowConfig - pokazuje na co aktualnie jest ustawiona podana opcja\n\ntest - sprawdza stan bota, jeżeli odpowie - wszystko jest w porządku\n\nbotinfo - pokazuje informacje o bocie TyTus", false) //INNE
         .setFooter("Discord TyTus Bot © 2020");
 
 

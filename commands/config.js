@@ -16,7 +16,7 @@ module.exports.run = async (bot, message, args, database) => {
 
     message.channel.send(loading);
 
-    database.query(`SELECT * FROM config WHERE name = "${args[0]}"`, (err, rows) => {
+    database.query(`SELECT * FROM config WHERE name = "${database.escape(args[0])}"`, (err, rows) => {
         if(err) return console.log(err);
         if(rows.length < 1) return response(message, ":x: Podano złą nazwę ustawienia! Jeżeli potrzebujesz pełnej listy dostępnych ustawień, wpisz **/help configs**.");
         
@@ -79,7 +79,7 @@ module.exports.run = async (bot, message, args, database) => {
 
             changedTextConfig = changedTextConfig.substr(0, changedTextConfig.length - 3);
 
-            database.query(`UPDATE servers SET config = "${changedTextConfig}" WHERE discordID = "${message.guild.id}"`, (err, rows) => {
+            database.query(`UPDATE servers SET config = "${database.escape(changedTextConfig)}" WHERE discordID = "${message.guild.id}"`, (err, rows) => {
                 if(err) {
                     console.log(err);
                     response(message, ":x: Niestety zmiana ustawienia się nie powiodła! Spróbuj ponownie później.");

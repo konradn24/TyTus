@@ -250,7 +250,7 @@ bot.on("messageReactionAdd", async (reaction, member) => {
     //឵឵឵  ឵឵឵         ឵឵឵           ឵឵឵  ឵឵឵   ⋘⋘ TASKS SYSTEM ⋙⋙
 
     if((reaction.message.mentions.members.size > 0 || reaction.message.mentions.roles.size > 0) && reaction.message.author.id === bot.user.id && reaction.emoji.name === "👍") {
-        var index = parseInt(reaction.message.content.substr(1, 2));
+        var index = parseInt(reaction.message.content.substr(1, 3));
         console.log(index);
 
         try {

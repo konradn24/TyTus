@@ -8,7 +8,7 @@ module.exports.run = async (bot, message, args, database) => {
 
     response(message, loading);
 
-    database.query(`SELECT * FROM config WHERE name = "${database.escape(args[0])}"`, (err, rows) => {
+    database.query(`SELECT * FROM config WHERE name = "${args[0]}"`, (err, rows) => {
         if(err) {
             console.log(err);
             response(message, ":x: Wystąpił błąd podczas odczytywania informacji z bazy danych (1)! Spróbuj ponownie później.");

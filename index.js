@@ -418,7 +418,7 @@ bot.on('guildMemberAdd', async member => {
     sendWelcomeText(member);
 
     //Update stats
-    updatestats_lastmember(member.guild, member.displayName);
+    //updatestats_lastmember(member.guild, member.displayName);
     updatestats_members(member.guild);
 });
 

@@ -419,13 +419,13 @@ bot.on('guildMemberAdd', async member => {
 
     //Update stats
     //updatestats_lastmember(member.guild, member.displayName);
-    updatestats_members(member.guild);
+    //updatestats_members(member.guild);
 });
 
 bot.on('guildMemberRemove', async member => {
     sendByeText(member);
 
-    updatestats_members(member.guild);
+    //updatestats_members(member.guild);
 });
 
 function sendWelcomeText(member) {

@@ -40,7 +40,7 @@ database.connect((err, connection) => {
 
 bot.on('ready', async () => {
     console.log("Jestem aktywny!");
-    bot.user.setActivity(`v${package.version} | /help`, {type: "WATCHING"});
+    bot.user.setActivity(`v${package.version} | TRWA PRZEBUDOWA!`, {type: "WATCHING"});
 
     var alreadyFetched = new Array();
 

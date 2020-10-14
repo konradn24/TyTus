@@ -5,6 +5,7 @@ const package = require('./package.json');
 let xp = require('./xp.json');
 // const superagent = require('superagent');
 const bot = new Discord.Client({disableEveryone: true});
+const wotblitzpoland = new Discord.Client({disableEveryone: true});
 
 const experiencePerMessage = 5;
 
@@ -40,7 +41,7 @@ database.connect((err, connection) => {
 
 bot.on('ready', async () => {
     console.log("Jestem aktywny!");
-    bot.user.setActivity(`v${package.version} | TRWA PRZEBUDOWA!`, {type: "WATCHING"});
+    bot.user.setActivity(`v${package.version} | /help`, {type: "WATCHING"});
 
     var alreadyFetched = new Array();
 
@@ -528,7 +529,7 @@ function updatestats_lastmember(guild, nickname) {
 
         let config = decode1(rows[0].config);
 
-        if(config[12] != "N") {
+        if(config[12] != "N" && config[12] != undefined) {
             if(guild.channels.find('id', config[12])) {
                 var name = 14;
                 name = config[name];
@@ -562,3 +563,41 @@ function decode3(part) {
 
     return details;
 }
+
+// -------------------
+
+wotblitzpoland.on('ready', async () => {
+    console.log(`WoT Blitz Poland - online`);
+});
+
+wotblitzpoland.on('message', async message => {
+    if(message.author.bot || message.channel.type === "dm") return;
+
+    if(message.content.startsWith("$")) {
+        let messageArray = message.content.split(" ");
+        let cmd = messageArray[0];
+        let args = messageArray.slice(1);
+
+        if(cmd === "wiadomosc") {
+            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send(`:x: Nie masz uprawnień potrzebnych do użycia tego polecenia!`);
+
+            if(!args[0]) return message.channel.send("Podaj kanał i treść wiadomości!");
+            if(!args[1]) return message.channel.send("Podaj treść wiadomości.");
+            if(message.mentions.channels.size === 0) return message.channel.send("Podano nieprawidłowy kanał!");
+
+            var channel = message.mentions.channels.first();
+            var text = args.slice(1).join(" ");
+
+            var embed = new Discord.RichEmbed()
+            .setColor(colors.gold)
+            .setDescription(text);
+
+            var messageID = await channel.send(embed);
+            var channelID = channel.id;
+            var guildID = message.guild.id;
+            await message.channel.send(`:white_check_mark: Gotowe! Kliknij w link, żeby zobaczyć wiadomość: https://discordapp.com/channels/${guildID}/${channelID}/${messageID}`);
+        }
+    }
+});
+
+wotblitzpoland.login(`NzY1OTAwMDU0ODAzNTEzNDE0.X4biAg.jF1ZqnAENcdQRshhtsd1qbfvVLo`);

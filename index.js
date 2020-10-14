@@ -578,25 +578,21 @@ wotblitzpoland.on('message', async message => {
         let cmd = messageArray[0];
         let args = messageArray.slice(1);
 
-        if(cmd === "wiadomosc") {
-            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send(`:x: Nie masz uprawnień potrzebnych do użycia tego polecenia!`);
+        if(!messageArray[1]) return message.channel.send(`:x: Podaj kanał, a następnie treść wiadomości!`);
+        else if(!messageArray[2]) return message.channel.send(`:x: Podaj treść wiadomości!`);
+        else if(message.mentions.channels.size < 1) return message.channel.send(`:x: Nie podano prawidłowego kanału!`);
 
-            if(!args[0]) return message.channel.send("Podaj kanał i treść wiadomości!");
-            if(!args[1]) return message.channel.send("Podaj treść wiadomości.");
-            if(message.mentions.channels.size === 0) return message.channel.send("Podano nieprawidłowy kanał!");
+        var channel = message.mentions.channels.first();
+        var text = args.slice(1).join(" ");
 
-            var channel = message.mentions.channels.first();
-            var text = args.slice(1).join(" ");
+        var embed = new Discord.RichEmbed()
+        .setColor(colors.gold)
+        .setDescription(text);
 
-            var embed = new Discord.RichEmbed()
-            .setColor(colors.gold)
-            .setDescription(text);
-
-            var messageID = await channel.send(embed);
-            var channelID = channel.id;
-            var guildID = message.guild.id;
-            await message.channel.send(`:white_check_mark: Gotowe! Kliknij w link, żeby zobaczyć wiadomość: https://discordapp.com/channels/${guildID}/${channelID}/${messageID}`);
-        }
+        var messageID = await channel.send(embed);
+        var channelID = channel.id;
+        var guildID = message.guild.id;
+        await message.channel.send(`:white_check_mark: Gotowe! Kliknij w link, żeby zobaczyć wiadomość: https://discordapp.com/channels/${guildID}/${channelID}/${messageID}`);
     }
 });
 

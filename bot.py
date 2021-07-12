@@ -9,6 +9,8 @@ import guild_logging
 # events
 from events import events_handler
 
+import os
+
 bot = commands.Bot(command_prefix=['T!', 't!'], intents=discord.Intents.all(), help_command=None)
 guild_logging.bot = bot
 
@@ -42,4 +44,4 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(extension)
 
-bot.run("NzUyMDk0ODI3MzczNTI3MDgw.X1So5A.gk-JMIZCCJsaCauCAMe1H6BNwvc")
+bot.run(os.environ['TOKEN'])

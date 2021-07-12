@@ -2,11 +2,13 @@ import mysql.connector
 
 import guild_logging
 
+import os
+
 connection = mysql.connector.connect(
-    host="pl2.sohost.pl",
-    user="blitzinf_tytusbotdb",
-    password="tytusadmin1234",
-    database="blitzinf_tytusbotdb"
+    host=os.environ['DB_HOST'],
+    user=os.environ['DB_USER'],
+    password=os.environ['DB_PASS'],
+    database=os.environ['DB_NAME']
 )
 
 cursor = connection.cursor(buffered=True)

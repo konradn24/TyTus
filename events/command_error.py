@@ -5,6 +5,9 @@ import guild_logging
 
 
 async def reply(ctx, error):
+    if ctx.command is None:
+        return
+    
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send(f":robot: Nie podano wymaganych argumentów! Użycie: **{ctx.command.usage}**")
     elif isinstance(error, (commands.BadArgument, commands.ChannelNotFound)):

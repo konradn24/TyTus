@@ -17,6 +17,8 @@ guild_logging.bot = bot
 bot.db_guild_not_found_info = ":thinking: Nie mogę wykonać tego polecenia, gdyż nie znalazłem tego serwera w swojej bazie danych... Wprowadź **t!addServer** lub poproś o pomoc: **t!support**"
 bot.db_guild_not_found_console = "Serwer {} ({}) nie został odnaleziony w tabeli 'guilds'"
 
+bot.pdat_guild_invite = "https://discord.gg/UNC5hdxA5F"
+
 
 @bot.event
 async def on_ready():
@@ -44,4 +46,5 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(extension)
 
-bot.run(os.environ['TOKEN'])
+# bot.run(os.environ['TOKEN'])
+bot.run("NzUyMDk0ODI3MzczNTI3MDgw.X1So5A.GQAQPho6quQkNCpaOJgpqkSDy3c")

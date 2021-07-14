@@ -46,5 +46,4 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(extension)
 
-# bot.run(os.environ['TOKEN'])
-bot.run("NzUyMDk0ODI3MzczNTI3MDgw.X1So5A.GQAQPho6quQkNCpaOJgpqkSDy3c")
+bot.run(os.environ['TOKEN'])

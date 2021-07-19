@@ -5,6 +5,7 @@ from discord.ext import commands
 # important modules
 import database
 import guild_logging
+from webserver import keep_alive
 
 # events
 from events import events_handler
@@ -48,4 +49,5 @@ if __name__ == '__main__':
     for extension in extensions:
         bot.load_extension(extension)
 
+keep_alive()
 bot.run(os.environ['TOKEN'])

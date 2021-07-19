@@ -18,7 +18,7 @@ async def change_presence(bot: commands.Bot):
     names = [f"Wydanie {os.environ['VERSION']}", f"Liczba serwerów: {len(bot.guilds)}", f"Liczba user'ów: {len(bot.users)}"]
 
     i = 0
-
+    
     while not bot.is_closed():
         if i >= len(names):
             i = 0

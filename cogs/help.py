@@ -39,6 +39,10 @@ class Help(commands.Cog, name="Pomocne komendy"):
 
         await ctx.send(embed=embed)
 
+    @commands.command(usage="", description="Wysyła zaproszenie na serwer, gdzie chętnie Ci pomożemy!")
+    async def support(self, ctx: commands.Context):
+        await ctx.send(f"Potrzebujesz pomocy lub masz jakiekolwiek wątpliwości? Śmiało poproś nas o pomoc! Zapraszamy: {self.bot.pdat_guild_invite}")
+
     async def help_command(self, ctx: commands.Context, command: str):
         command = self.bot.get_command(command)
 

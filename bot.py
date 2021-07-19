@@ -24,6 +24,8 @@ bot.pdat_guild_invite = "https://discord.gg/UNC5hdxA5F"
 async def on_ready():
     await events_handler.ready.print_info()
 
+    bot.loop.create_task(events_handler.ready.change_presence(bot))
+
 
 @bot.event
 async def on_guild_join(guild):
